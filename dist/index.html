@@ -3,20 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#09090b" />
+    <meta name="theme-color" content="#080d15" />
     <meta
       name="description"
-      content="La noche avanza. Tú decides. Explora UMBRA, una experiencia interactiva de contención de la plaga zombie en Manta. Spookython 2026, Track B."
+      content="UMBRA. Explora Manta, simula la propagación de un brote y compara decisiones de contención en una experiencia geoespacial interactiva."
     />
-    <title>UMBRA — Contén lo inevitable.</title>
+    <title>UMBRA — El futuro se decide hoy.</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="preload" href="./assets/umbra-hero.webp" as="image" />
+    <link rel="preload" href="./assets/manta-poster.webp" as="image" />
     <link rel="stylesheet" href="./styles.css" />
     <script type="module" src="./app.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#simulador">Saltar al simulador</a>
-    <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <svg class="svg-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
       <symbol id="i-arrow" viewBox="0 0 24 24">
         <path d="M4 12h15m-6-6 6 6-6 6" />
       </symbol>
@@ -24,7 +24,10 @@
         <path d="M6 18 18 6M6 6h12v12" />
       </symbol>
       <symbol id="i-play" viewBox="0 0 24 24">
-        <path d="m9 5 11 7-11 7z" />
+        <path d="m8 5 11 7-11 7z" />
+      </symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24">
+        <path d="M8 5v14M16 5v14" />
       </symbol>
       <symbol id="i-location" viewBox="0 0 24 24">
         <path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" />
@@ -39,7 +42,7 @@
         <path d="m6 6 4 4m4 0 4-4M7 18l3-4m4 0 5 5" />
       </symbol>
       <symbol id="i-shield" viewBox="0 0 24 24">
-        <path d="M12 3 3 7v5c0 6 9 10 9 10s9-4 9-10V7z" />
+        <path d="m12 3-9 4v5c0 6 9 10 9 10s9-4 9-10V7Z" />
         <path d="m8 12 3 3 5-6" />
       </symbol>
       <symbol id="i-chart" viewBox="0 0 24 24">
@@ -58,23 +61,32 @@
       <symbol id="i-download" viewBox="0 0 24 24">
         <path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4" />
       </symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24">
+        <path d="M4 10a8 8 0 1 1 1 8M4 4v6h6" />
+      </symbol>
+      <symbol id="i-lightning" viewBox="0 0 24 24">
+        <path d="m13 2-9 12h7l-1 8 10-12h-7z" />
+      </symbol>
+      <symbol id="i-print" viewBox="0 0 24 24">
+        <path d="M7 7V3h10v4M7 17H3V9h18v8h-4M7 14h10v7H7zM17 11h.01" />
+      </symbol>
     </svg>
-
-    <header class="site-header">
-      <div class="nav-shell container">
-        <a href="#inicio" class="brand" aria-label="UMBRA, inicio"
-          ><img src="./favicon.svg" width="34" height="34" alt="" /><span
-            >UMBRA<span class="brand-dot">®</span></span
+    <header class="site-header" id="site-header">
+      <div class="container nav-shell">
+        <a class="brand" href="#inicio" aria-label="UMBRA, inicio"
+          ><img src="./favicon.svg" width="36" height="36" alt="" /><span
+            >umbra<span class="brand-period">.</span></span
           ></a
         >
         <nav class="desktop-nav" aria-label="Navegación principal">
-          <a href="#mision">La misión</a><a href="#modelo">El modelo</a
-          ><a href="#simulador">Simulador</a>
+          <a href="#territorio">El territorio</a
+          ><a href="#modelo">Cómo funciona</a
+          ><a href="#simulador">Laboratorio</a>
         </nav>
         <div class="nav-end">
-          <span class="edition">SPOOKYTHON <span>’26</span></span
+          <span class="edition">SPOOKYTHON ’26 <span> / </span> TRACK B</span
           ><a class="nav-cta" href="#simulador"
-            >Entrar al laboratorio <svg><use href="#i-diagonal" /></svg
+            >Abrir simulador <svg><use href="#i-diagonal" /></svg
           ></a>
         </div>
         <button
@@ -88,502 +100,834 @@
         </button>
       </div>
       <nav
-        id="mobile-nav"
         class="mobile-nav"
+        id="mobile-nav"
         aria-label="Navegación móvil"
         hidden
       >
-        <a href="#mision">La misión</a><a href="#modelo">El modelo</a
-        ><a href="#simulador">Entrar al simulador ↗</a>
+        <a href="#territorio">El territorio</a
+        ><a href="#modelo">Cómo funciona</a
+        ><a href="#simulador">Entrar al laboratorio ↗</a>
       </nav>
+      <div class="page-progress" aria-hidden="true">
+        <span id="page-progress"></span>
+      </div>
     </header>
-
     <main>
-      <section id="inicio" class="hero">
-        <div class="hero-art" aria-hidden="true">
-          <img
-            src="./assets/umbra-hero.webp"
-            alt=""
-            fetchpriority="high"
-            width="1536"
-            height="1024"
-          />
-          <div class="art-shade"></div>
-        </div>
-        <div class="hero-grain" aria-hidden="true"></div>
-        <div class="container hero-inner">
-          <div class="hero-copy">
-            <div class="hero-badge hero-enter">
-              <span class="status-dot"></span> EL BROTE HA COMENZADO
-              <span class="badge-divider"></span> TRACK B
+      <section
+        class="intro-scroll"
+        id="inicio"
+        aria-label="Introducción: una ciudad, un brote, una decisión"
+      >
+        <div class="intro-sticky">
+          <video
+            id="intro-video"
+            class="intro-video"
+            muted
+            playsinline
+            preload="auto"
+            poster="./assets/manta-poster.webp"
+            aria-hidden="true"
+          >
+            <source src="./assets/manta-intro.mp4" type="video/mp4" />
+          </video>
+          <div class="intro-shade"></div>
+          <div class="intro-noise" aria-hidden="true"></div>
+          <div class="intro-grid" aria-hidden="true"></div>
+          <div class="container intro-content">
+            <div class="intro-frame frame-first" id="intro-frame-0">
+              <div class="eyebrow intro-enter">
+                <span class="live-dot"></span> INTELIGENCIA PARA LA CONTENCIÓN
+              </div>
+              <h1 class="intro-enter">
+                El futuro se<br /><em>decide hoy.</em>
+              </h1>
+              <p class="hero-description intro-enter">
+                Cada calle conecta una historia.<br />Cada decisión puede
+                cambiar miles.<br /><strong
+                  >Anticípate al siguiente movimiento.</strong
+                >
+              </p>
+              <div class="hero-actions intro-enter">
+                <a class="button button-primary" href="#simulador"
+                  >Diseña tu estrategia <svg><use href="#i-arrow" /></svg></a
+                ><a class="text-link" href="#territorio"
+                  >Explora Manta <span>↓</span></a
+                >
+              </div>
+              <div class="hero-micro intro-enter">
+                <span class="geo-cross">⌖</span> MANTA, ECUADOR
+                <span class="micro-line"></span> EL TERRITORIO ES REAL. EL
+                ESCENARIO LO EXPLORAS TÚ.
+              </div>
             </div>
-            <h1 class="hero-enter">
-              Contén lo<br /><span class="hero-orange">inevitable.</span>
-            </h1>
-            <p class="hero-description hero-enter">
-              Una ciudad conectada. Una plaga que no espera.<br
-                class="desktop-break"
-              />
-              La diferencia entre el caos y el control<br
-                class="desktop-break"
-              />
-              es tu próxima decisión.
-            </p>
-            <div class="hero-actions hero-enter">
-              <a class="button button-primary" href="#simulador"
-                >Diseñar mi estrategia <svg><use href="#i-arrow" /></svg></a
-              ><a class="text-link" href="#mision"
-                ><span class="play-circle"
-                  ><svg><use href="#i-play" /></svg
-                ></span>
-                Descubrir la misión</a
+            <div
+              class="intro-frame frame-story"
+              id="intro-frame-1"
+              aria-hidden="true"
+            >
+              <div class="eyebrow">
+                <span class="live-dot"></span> 01 / LA CONEXIÓN
+              </div>
+              <h2>Un solo caso.<br /><em>Todos conectados.</em></h2>
+              <p>
+                Del mercado al bus. Del bus a casa.<br />Lo que no ves también
+                se mueve.
+              </p>
+              <span class="story-footnote"
+                >Visualización narrativa de un brote hipotético.</span
               >
             </div>
-            <div class="hero-location hero-enter">
-              <svg><use href="#i-location" /></svg> Manta, Ecuador
-              <span>·</span> Spookython 2026
+            <div
+              class="intro-frame frame-story"
+              id="intro-frame-2"
+              aria-hidden="true"
+            >
+              <div class="eyebrow">
+                <span class="live-dot green"></span> 02 / LA DECISIÓN
+              </div>
+              <h2>El azar propaga.<br /><em>La estrategia protege.</em></h2>
+              <p>
+                Los mismos recursos.<br />Una forma diferente de elegir dónde
+                actuar.
+              </p>
+              <a class="button button-primary" href="#simulador"
+                >Cambia el desenlace <svg><use href="#i-arrow" /></svg
+              ></a>
+            </div>
+            <aside
+              class="intro-telemetry"
+              aria-label="Contexto de la introducción"
+            >
+              <span class="telemetry-cross">+</span>
+              <div class="telemetry-top">
+                <span class="live-dot"></span> ESCENARIO MANTA
+              </div>
+              <strong id="intro-telemetry-title"
+                >Una ciudad en movimiento.</strong
+              >
+              <div class="telemetry-sub">
+                <span id="intro-telemetry-detail"
+                  >Cartografía OpenStreetMap</span
+                ><svg><use href="#i-location" /></svg>
+              </div>
+            </aside>
+            <div class="intro-bottom">
+              <div class="scroll-cue">
+                <span class="scroll-mouse"></span
+                ><span
+                  >DESLIZA PARA DESCUBRIR<span
+                    >Una historia en tres movimientos</span
+                  ></span
+                >
+              </div>
+              <div
+                class="intro-chapters"
+                aria-label="Capítulos de la introducción"
+              >
+                <button
+                  class="chapter-button is-active"
+                  data-chapter="0"
+                  aria-label="Ver capítulo 1, la ciudad"
+                >
+                  <span>01</span> La ciudad</button
+                ><button
+                  class="chapter-button"
+                  data-chapter="1"
+                  aria-label="Ver capítulo 2, el brote"
+                >
+                  <span>02</span> El brote</button
+                ><button
+                  class="chapter-button"
+                  data-chapter="2"
+                  aria-label="Ver capítulo 3, tu decisión"
+                >
+                  <span>03</span> Tu decisión
+                </button>
+                <div class="chapter-track">
+                  <span id="chapter-progress"></span>
+                </div>
+              </div>
+              <a class="skip-intro" href="#territorio"
+                >Saltar introducción <svg><use href="#i-diagonal" /></svg
+              ></a>
             </div>
           </div>
-          <div class="hero-signal" aria-hidden="true">
-            <span class="signal-corner"></span>
-            <div class="signal-top">
-              <span class="status-dot"></span> PACIENTE CERO
-            </div>
-            <div class="signal-number">001<span> / DETECTADO</span></div>
-            <div class="signal-bottom">Un caso puede cambiarlo todo.</div>
-          </div>
-          <div class="hero-bottom">
-            <span class="hero-index">01 — EL INICIO DE LA CONTENCIÓN</span
-            ><a href="#mision" class="scroll-link"
-              >EXPLORA EL PROTOCOLO <span>↓</span></a
-            ><span class="hero-coordinates">SIMULACIÓN · NO PREDICCIÓN</span>
+          <div class="video-credit">
+            SECUENCIA CARTOGRÁFICA · © OPENSTREETMAP CONTRIBUTORS
           </div>
         </div>
       </section>
-
-      <div class="protocol-strip">
-        <div class="container protocol-inner">
-          <div>
-            <svg><use href="#i-network" /></svg
-            ><span><small>01</small> Entiende la propagación</span>
-          </div>
-          <div>
-            <svg><use href="#i-chart" /></svg
-            ><span><small>02</small> Compara tus decisiones</span>
-          </div>
-          <div>
-            <svg><use href="#i-shield" /></svg
-            ><span><small>03</small> Cambia el desenlace</span>
-          </div>
+      <div class="place-strip" aria-hidden="true">
+        <div>
+          <span>MANTA</span><i>✳</i><span>EL MURCIÉLAGO</span><i>✳</i
+          ><span>EL PUERTO</span><i>✳</i><span>ULEAM</span><i>✳</i
+          ><span>MERCADO CENTRAL</span><i>✳</i><span>MANTA</span><i>✳</i
+          ><span>EL MURCIÉLAGO</span><i>✳</i><span>EL PUERTO</span><i>✳</i
+          ><span>ULEAM</span><i>✳</i><span>MERCADO CENTRAL</span><i>✳</i>
         </div>
       </div>
 
-      <section id="mision" class="mission section-space container">
-        <div class="section-eyebrow reveal">
-          <span class="section-number">01</span> LA MISIÓN
-          <span class="eyebrow-line"></span> MANTA NOS NECESITA
+      <section
+        class="territory-section section-space container"
+        id="territorio"
+      >
+        <div class="section-kicker reveal">
+          <span>01 / EL TERRITORIO</span
+          ><span>UNA CIUDAD. MUCHAS FORMAS DE CONECTAR.</span>
         </div>
-        <div class="mission-layout">
-          <h2 class="reveal">
-            El brote no espera.<br />Tu estrategia<br /><span class="muted-word"
-              >tampoco debería.</span
-            >
-          </h2>
-          <div class="mission-copy reveal">
-            <p class="lead">
-              Todo empezó con una persona.<br />Ahora, cada conexión cuenta.
-            </p>
-            <p>
-              En casa, en el bus, en el mercado. La plaga encuentra su camino a
-              través de una ciudad que sigue en movimiento.
-            </p>
-            <p>
-              Eres el Comité de Contención. Tu misión: decidir a quién proteger
-              con recursos limitados y descubrir qué cambia cuando actúas con
-              estrategia.
-            </p>
-            <a href="#modelo" class="inline-link"
-              >Conoce el sistema <svg><use href="#i-arrow" /></svg
-            ></a>
+        <div class="section-heading reveal">
+          <h2>Más que un mapa.<br /><em>Una red de posibilidades.</em></h2>
+          <p>
+            La costa, las calles y los lugares de Manta.<br />Un escenario para
+            entender cómo una decisión<br class="desktop-break" />
+            local puede cambiar toda la historia.
+          </p>
+        </div>
+        <div class="territory-map-wrap reveal spotlight-card">
+          <canvas
+            id="territory-map"
+            aria-label="Mapa real de Manta con calles, costa y ubicaciones de referencia"
+            role="img"
+          ></canvas>
+          <div class="map-title">
+            <span class="live-dot"></span> MANTA <span>ECUADOR / MANABÍ</span>
           </div>
+          <div class="map-locations" id="map-locations">
+            <button type="button" data-place="mercado" class="is-active">
+              Mercado central</button
+            ><button type="button" data-place="escuela">ULEAM</button
+            ><button type="button" data-place="transporte">
+              Terminal terrestre
+            </button>
+          </div>
+          <div class="map-place-info" id="map-place-info">
+            <span>ELIGE UN PUNTO DE INICIO</span>
+            <h3>Todo empieza en un lugar.</h3>
+            <p>
+              Explora los puntos de referencia y lleva el escenario al
+              laboratorio.
+            </p>
+            <button type="button" id="use-place" class="inline-link">
+              Simular desde aquí <svg><use href="#i-arrow" /></svg>
+            </button>
+          </div>
+          <div class="map-compass" aria-hidden="true">N<span>↑</span></div>
+          <span class="map-attribution"
+            >Geografía real ·
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              target="_blank"
+              rel="noopener"
+              >© OpenStreetMap contributors</a
+            ></span
+          >
+          <div id="map-error" class="map-error" hidden>
+            No se pudo cargar el mapa. El simulador sigue disponible.
+          </div>
+        </div>
+        <div class="territory-caption reveal">
+          <span><i class="legend-dot dot-blue"></i> CARTOGRAFÍA REAL</span>
+          <p>
+            Las calles y los puntos de referencia provienen de OpenStreetMap. La
+            población y los contagios son sintéticos: no representan personas ni
+            casos reales.
+          </p>
         </div>
       </section>
 
-      <section id="modelo" class="model-section container">
-        <div class="section-eyebrow reveal">
-          <span class="section-number">02</span> EL MODELO
-          <span class="eyebrow-line"></span> CONECTAR PARA COMPRENDER
-        </div>
-        <div class="section-title-row reveal">
-          <h2>
-            Invisible a simple vista.<br /><span class="muted-word"
-              >Decisivo en cada conexión.</span
-            >
-          </h2>
-          <p>Una red de contactos.<br />Miles de posibles desenlaces.</p>
-        </div>
-        <div class="model-layout">
-          <div class="network-panel reveal">
-            <div class="panel-top">
-              <span><span class="tiny-square"></span> ANATOMÍA DE UN BROTE</span
-              ><span class="outline-tag">RED SINTÉTICA</span>
-            </div>
-            <div class="network-stage">
-              <svg
-                id="contact-network"
-                viewBox="0 0 720 410"
-                role="img"
-                aria-label="Red ilustrativa de contactos conectando hogares, mercado, escuela y transporte"
-              ></svg>
-              <div class="network-center-label">
-                MANTA<span>RED DE CONTACTOS</span>
-              </div>
-              <span class="network-label label-home"><i></i> Hogares</span
-              ><span class="network-label label-market"><i></i> Mercado</span
-              ><span class="network-label label-school"><i></i> Escuela</span
-              ><span class="network-label label-bus"><i></i> Transporte</span>
-            </div>
-            <div class="network-footer">
-              <span><i class="legend-dot dot-purple"></i> Susceptible</span
-              ><span><i class="legend-dot dot-yellow"></i> Expuesto</span
-              ><span><i class="legend-dot dot-orange"></i> Infeccioso</span
-              ><span><i class="legend-dot dot-green"></i> Recuperado</span>
-            </div>
-          </div>
-          <div class="model-steps">
-            <article class="model-step reveal">
-              <span class="step-icon"
-                ><svg><use href="#i-network" /></svg
-              ></span>
-              <div>
-                <span class="step-number">01 / OBSERVA</span>
-                <h3>La ciudad es una red.</h3>
-                <p>
-                  Los lugares nos conectan. Algunos contactos pueden propagar el
-                  brote mucho más que otros.
-                </p>
-              </div>
-            </article>
-            <article class="model-step reveal">
-              <span class="step-icon"
-                ><svg><use href="#i-shield" /></svg
-              ></span>
-              <div>
-                <span class="step-number">02 / INTERVIENE</span>
-                <h3>Cada dosis importa.</h3>
-                <p>
-                  Prioriza a las personas susceptibles con más conexiones.
-                  Mismos recursos, una decisión diferente.
-                </p>
-              </div>
-            </article>
-            <article class="model-step reveal">
-              <span class="step-icon"
-                ><svg><use href="#i-chart" /></svg
-              ></span>
-              <div>
-                <span class="step-number">03 / COMPARA</span>
-                <h3>Que hablen las curvas.</h3>
-                <p>
-                  Contrasta tu estrategia con actuar al azar y no intervenir.
-                  Repite, mide y vuelve a decidir.
-                </p>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section id="simulador" class="simulator-section section-space">
+      <section id="modelo" class="model-section section-space">
         <div class="container">
-          <div class="section-eyebrow reveal">
-            <span class="section-number">03</span> EL LABORATORIO
-            <span class="eyebrow-line"></span> TU TURNO DE DECIDIR
+          <div class="section-kicker reveal">
+            <span>02 / EL SISTEMA</span
+            ><span>COMPLEJO POR DENTRO. CLARO PARA DECIDIR.</span>
           </div>
-          <div class="section-title-row simulator-heading reveal">
-            <div>
-              <h2>
-                Cambia una decisión.<br /><span class="hero-orange"
-                  >Cambia la historia.</span
-                >
-              </h2>
-              <p>Ajusta el escenario. Ejecuta el brote. Descubre el impacto.</p>
-            </div>
-            <span class="lab-label"
-              ><span class="status-dot"></span> DEMO INTERACTIVA</span
+          <div class="section-heading reveal">
+            <h2>Entiende lo invisible.<br /><em>Actúa donde importa.</em></h2>
+            <p>
+              No necesitas adivinar el futuro.<br />Necesitas comparar lo que
+              podría pasar.
+            </p>
+          </div>
+          <div class="method-grid stagger-group">
+            <article class="method-card reveal spotlight-card">
+              <span class="method-index">01 — CONECTA</span>
+              <div class="method-visual network-visual" aria-hidden="true">
+                <span class="orbit orbit-one"></span
+                ><span class="orbit orbit-two"></span><i></i><i></i><i></i
+                ><i></i><i></i><i></i><strong>240<span>agentes</span></strong>
+              </div>
+              <h3>La ciudad como una red.</h3>
+              <p>
+                Hogares y espacios compartidos forman conexiones. Algunas
+                personas conectan más grupos que otras.
+              </p>
+              <span class="method-meta"
+                >RED SINTÉTICA · CONTACTOS EXPLÍCITOS</span
+              >
+            </article>
+            <article class="method-card reveal spotlight-card">
+              <span class="method-index">02 — SIMULA</span>
+              <div class="method-visual state-visual" aria-hidden="true">
+                <div><i class="state-s"></i><span>Sano</span><b>→</b></div>
+                <div><i class="state-e"></i><span>Expuesto</span><b>→</b></div>
+                <div>
+                  <i class="state-i"></i><span>Infeccioso</span><b>→</b>
+                </div>
+                <div><i class="state-r"></i><span>Inmune</span></div>
+              </div>
+              <h3>Un brote, día a día.</h3>
+              <p>
+                Un modelo SEIR sigue cada transición. Ajusta el contagio, la
+                eficacia y el momento de respuesta.
+              </p>
+              <span class="method-meta">30 DÍAS · SEMILLA REPRODUCIBLE</span>
+            </article>
+            <article class="method-card reveal spotlight-card">
+              <span class="method-index">03 — DECIDE</span>
+              <div class="method-visual bars-visual" aria-hidden="true">
+                <div>
+                  <span>Sin actuar</span
+                  ><i style="--bar: 95%; --bar-color: #78879b"></i>
+                </div>
+                <div>
+                  <span>Al azar</span
+                  ><i style="--bar: 70%; --bar-color: #b4a0e2"></i>
+                </div>
+                <div>
+                  <span>Con estrategia</span
+                  ><i style="--bar: 27%; --bar-color: #ff9254"></i>
+                </div>
+                <small>Esquema ilustrativo</small>
+              </div>
+              <h3>Mismos recursos. Otra decisión.</h3>
+              <p>
+                Compara una estrategia dirigida con actuar al azar y no
+                intervenir. Mira promedios y variabilidad.
+              </p>
+              <span class="method-meta">3 ESTRATEGIAS · HASTA 64 RÉPLICAS</span>
+            </article>
+          </div>
+          <div class="model-principle reveal">
+            <span>LA PREGUNTA NO ES CUÁNTAS DOSIS TIENES.</span>
+            <p>Es <em>dónde</em> las usas.</p>
+            <svg><use href="#i-diagonal" /></svg>
+          </div>
+        </div>
+      </section>
+
+      <section id="simulador" class="simulator-section section-space container">
+        <div class="section-kicker reveal">
+          <span>03 / EL LABORATORIO</span
+          ><span
+            ><i class="live-dot green"></i> INTERACTIVO. REPRODUCIBLE.
+            TUYO.</span
+          >
+        </div>
+        <div class="section-heading reveal">
+          <h2>Ahora, tú tienes<br /><em>el control.</em></h2>
+          <div>
+            <p>
+              Cambia las condiciones. Pon a prueba una idea.<br />Descubre qué
+              decisiones marcan la diferencia.
+            </p>
+            <span class="demo-label"
+              >POBLACIÓN SINTÉTICA · SIN CALIBRACIÓN CLÍNICA</span
             >
           </div>
-          <div class="lab-workspace reveal">
-            <form id="simulation-form" class="lab-controls">
-              <div class="control-heading">
-                <span>Configuración</span
-                ><span class="control-version">V.01</span>
-              </div>
-              <label class="field-label" for="origin"
-                >Punto de inicio <span>01</span></label
+        </div>
+        <div class="surprise-bar reveal">
+          <span
+            ><svg><use href="#i-lightning" /></svg> ¿Y si todo cambia?</span
+          >
+          <div class="surprise-buttons">
+            <button type="button" data-surprise="transmission">
+              Contagio ×2</button
+            ><button type="button" data-surprise="vaccines">
+              La mitad de dosis</button
+            ><button type="button" data-surprise="origin">
+              Brote en terminal</button
+            ><button type="button" data-surprise="efficacy">
+              Eficacia al 50%
+            </button>
+          </div>
+          <span class="surprise-caption">BROTE SORPRESA</span>
+        </div>
+        <div class="lab-workspace reveal">
+          <form id="simulation-form" class="lab-controls">
+            <div class="control-heading">
+              <span>Define el escenario</span
+              ><button
+                type="button"
+                id="reset-button"
+                class="icon-button"
+                aria-label="Restablecer escenario"
+                title="Restablecer escenario"
               >
-              <div class="select-wrap">
-                <svg><use href="#i-location" /></svg
-                ><select id="origin" name="origin">
-                  <option value="mercado">Mercado central</option>
-                  <option value="escuela">Escuela</option>
-                  <option value="transporte">Terminal de buses</option>
+                <svg><use href="#i-reset" /></svg>
+              </button>
+            </div>
+            <label class="field-label" for="origin"
+              >Punto de inicio <span>01</span></label
+            >
+            <div class="select-wrap">
+              <svg><use href="#i-location" /></svg
+              ><select id="origin" name="origin">
+                <option value="mercado">Mercado central</option>
+                <option value="escuela">Entorno ULEAM</option>
+                <option value="transporte">Terminal terrestre</option>
+              </select>
+            </div>
+            <div class="range-heading">
+              <label class="field-label" for="transmission"
+                >Contagio por contacto</label
+              ><output id="transmission-value" for="transmission"
+                >28<span>%</span></output
+              >
+            </div>
+            <input
+              type="range"
+              id="transmission"
+              name="transmission"
+              min="0"
+              max="100"
+              value="28"
+              step="1"
+            />
+            <div class="range-extents">
+              <span>0%</span><span>100% por día</span>
+            </div>
+            <div class="range-heading">
+              <label class="field-label" for="vaccines">Dosis disponibles</label
+              ><output id="vaccines-value" for="vaccines">40</output>
+            </div>
+            <input
+              type="range"
+              id="vaccines"
+              name="vaccines"
+              min="0"
+              max="150"
+              value="40"
+              step="1"
+            />
+            <div class="range-extents">
+              <span>0 dosis</span><span>150 dosis</span>
+            </div>
+            <label class="field-label" for="strategy"
+              >Prioridad estratégica</label
+            >
+            <div class="select-wrap no-icon">
+              <select id="strategy" name="strategy">
+                <option value="degree">Más conexiones</option>
+                <option value="bridge">Puentes entre grupos</option>
+              </select>
+            </div>
+            <label class="field-label" for="seed">Semilla reproducible</label>
+            <div class="seed-input">
+              <input
+                id="seed"
+                name="seed"
+                type="number"
+                min="0"
+                max="999999999"
+                value="2026"
+                required
+              /><button
+                type="button"
+                id="shuffle-seed"
+                aria-label="Generar otra semilla"
+              >
+                <svg><use href="#i-dice" /></svg>
+              </button>
+            </div>
+            <details class="advanced-controls">
+              <summary>
+                Parámetros avanzados <svg><use href="#i-plus" /></svg>
+              </summary>
+              <div class="advanced-grid">
+                <label
+                  >Casos iniciales<input
+                    type="number"
+                    id="initial-infected"
+                    min="1"
+                    max="20"
+                    value="1"
+                    required /></label
+                ><label
+                  >Eficacia (%)<input
+                    type="number"
+                    id="vaccine-efficacy"
+                    min="0"
+                    max="100"
+                    value="100"
+                    required /></label
+                ><label
+                  >Día de respuesta<input
+                    type="number"
+                    id="response-day"
+                    min="0"
+                    max="14"
+                    value="0"
+                    required /></label
+                ><label
+                  >Réplicas<select id="runs">
+                    <option value="12">12 réplicas</option>
+                    <option value="32">32 réplicas</option>
+                    <option value="64">64 réplicas</option>
+                  </select></label
+                >
+              </div>
+              <label class="checkbox-label"
+                ><input type="checkbox" id="adaptive" /> Priorizar contactos
+                cercanos al brote</label
+              >
+            </details>
+            <button
+              class="button button-primary run-button"
+              id="run-button"
+              type="submit"
+            >
+              <span>Ejecutar simulación</span><svg><use href="#i-arrow" /></svg>
+            </button>
+            <p class="field-hint">
+              240 agentes · 30 días · Tres estrategias emparejadas
+            </p>
+            <span
+              id="pending-state"
+              class="pending-state"
+              aria-live="polite"
+            ></span>
+          </form>
+          <div class="lab-main" id="results" aria-busy="true">
+            <div class="lab-topline">
+              <div>
+                <span class="chart-eyebrow">CENTRO DE CONTENCIÓN / MANTA</span>
+                <h3>Una ciudad. Tres futuros.</h3>
+              </div>
+              <span id="result-status" class="result-status"
+                ><i class="live-dot green"></i> Preparando</span
+              >
+            </div>
+            <div
+              class="lab-view-tabs"
+              role="tablist"
+              aria-label="Vista del resultado"
+            >
+              <button
+                id="tab-map"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                aria-controls="view-map"
+                data-view="map"
+              >
+                <svg><use href="#i-location" /></svg> Mapa del brote</button
+              ><button
+                id="tab-chart"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="view-chart"
+                tabindex="-1"
+                data-view="chart"
+              >
+                <svg><use href="#i-chart" /></svg> Curvas comparadas
+              </button>
+            </div>
+            <div
+              class="map-view"
+              id="view-map"
+              role="tabpanel"
+              aria-labelledby="tab-map"
+            >
+              <div class="simulation-map">
+                <canvas
+                  id="outbreak-map"
+                  role="img"
+                  aria-label="Evolución de agentes sintéticos sobre el mapa real de Manta"
+                ></canvas>
+                <div class="map-state-legend">
+                  <span><i class="legend-dot state-s"></i> Susceptible</span
+                  ><span><i class="legend-dot state-e"></i> Expuesto</span
+                  ><span><i class="legend-dot state-i"></i> Infeccioso</span
+                  ><span><i class="legend-dot state-r"></i> Inmune</span>
+                </div>
+                <div class="map-day-stamp">
+                  <span>DÍA</span><strong id="map-day">00</strong
+                  ><small>/ 30</small>
+                </div>
+                <div class="map-population-stamp">
+                  <span id="map-infected-count">—</span
+                  ><small>infecciosos este día</small>
+                </div>
+                <span class="map-attribution"
+                  >© OpenStreetMap contributors · Agentes sintéticos</span
+                >
+              </div>
+              <div class="playback-controls">
+                <button
+                  id="play-button"
+                  type="button"
+                  class="play-button"
+                  aria-label="Reproducir evolución"
+                >
+                  <svg><use href="#i-play" /></svg></button
+                ><label for="day-slider" class="sr-only"
+                  >Día de la simulación</label
+                ><input
+                  type="range"
+                  id="day-slider"
+                  min="0"
+                  max="30"
+                  value="0"
+                /><output id="day-output" for="day-slider">Día 0</output
+                ><label for="map-strategy" class="sr-only"
+                  >Estrategia mostrada en el mapa</label
+                ><select id="map-strategy">
+                  <option value="strategic">Estratégica</option>
+                  <option value="random">Al azar</option>
+                  <option value="baseline">Sin intervención</option>
                 </select>
               </div>
-              <div class="range-heading">
-                <label class="field-label" for="transmission"
-                  >Probabilidad de contagio</label
-                ><output id="transmission-value" for="transmission"
-                  >28<span>%</span></output
-                >
-              </div>
-              <input
-                type="range"
-                id="transmission"
-                name="transmission"
-                min="10"
-                max="65"
-                value="28"
-                step="1"
-              />
-              <div class="range-extents">
-                <span>Menor</span><span>Mayor</span>
-              </div>
-              <div class="range-heading vaccine-heading">
-                <label class="field-label" for="vaccines"
-                  >Vacunas disponibles</label
-                ><output id="vaccines-value" for="vaccines">40</output>
-              </div>
-              <input
-                type="range"
-                id="vaccines"
-                name="vaccines"
-                min="0"
-                max="100"
-                value="40"
-                step="1"
-              />
-              <div class="range-extents">
-                <span>0 dosis</span><span>100 dosis</span>
-              </div>
-              <label class="field-label seed-label" for="seed"
-                >Semilla reproducible <span>↻</span></label
-              >
-              <div class="seed-input">
-                <input
-                  id="seed"
-                  name="seed"
-                  type="number"
-                  min="0"
-                  max="999999999"
-                  value="2026"
-                  required
-                  aria-describedby="seed-help"
-                /><button
-                  type="button"
-                  id="shuffle-seed"
-                  aria-label="Generar otra semilla"
-                  title="Generar otra semilla"
-                >
-                  <svg><use href="#i-dice" /></svg>
-                </button>
-              </div>
-              <p id="seed-help" class="field-hint">
-                Misma configuración. Mismo resultado.
+              <p class="map-replica-note">
+                Mapa: primera réplica. Las curvas y las métricas muestran
+                promedios.
               </p>
-              <button
-                id="run-button"
-                type="submit"
-                class="button button-primary run-button"
-              >
-                <span>Ejecutar simulación</span
-                ><svg><use href="#i-play" /></svg>
-              </button>
-              <button id="reset-button" type="button" class="reset-button">
-                Restablecer escenario <span>↺</span>
-              </button>
-              <div class="control-footnote">
-                <svg><use href="#i-network" /></svg
-                ><span
-                  ><strong>240</strong> personas sintéticas<br />30 días · 12
-                  réplicas por estrategia</span
-                >
-              </div>
-            </form>
-            <div class="lab-results" id="results" aria-busy="true">
-              <div class="results-heading">
-                <div>
-                  <span class="chart-eyebrow">PROYECCIÓN COMPARATIVA</span>
-                  <h3>El impacto de tus decisiones</h3>
-                </div>
-                <span id="result-status" class="result-status"
-                  ><span class="status-dot"></span> Preparando</span
-                >
-              </div>
+            </div>
+            <div
+              class="chart-view"
+              id="view-chart"
+              role="tabpanel"
+              aria-labelledby="tab-chart"
+              hidden
+            >
               <div class="chart-legend">
                 <span><i class="line-key key-orange"></i> Estratégica</span
                 ><span><i class="line-key key-purple"></i> Al azar</span
                 ><span><i class="line-key key-grey"></i> Sin intervención</span>
               </div>
-              <div class="chart-wrap">
-                <span class="chart-axis-title"
-                  >Contagios acumulados · promedio</span
-                ><svg
-                  id="simulation-chart"
-                  viewBox="0 0 740 290"
-                  role="img"
-                  aria-labelledby="chart-title chart-description"
-                >
-                  <title id="chart-title">
-                    Comparación de contagios acumulados durante 30 días
-                  </title>
-                  <desc id="chart-description">
-                    Ejecuta la simulación para comparar tres estrategias de
-                    contención.
-                  </desc></svg
-                ><span class="chart-x-title">Días desde el primer caso</span>
-              </div>
-              <div class="result-metrics">
-                <div>
-                  <span class="metric-label"
-                    >Contagios evitados <span>↗</span></span
-                  ><strong id="saved-value">—</strong
-                  ><small>frente a no intervenir</small>
-                </div>
-                <div>
-                  <span class="metric-label">Reducción del brote</span
-                  ><strong id="reduction-value">—</strong
-                  ><small>con vacunación estratégica</small>
-                </div>
-                <div>
-                  <span class="metric-label">Rango de contagios</span
-                  ><strong id="range-value" class="range-metric">—</strong
-                  ><small>mín. – máx. de la estrategia</small>
-                </div>
-              </div>
-              <div class="results-footnote">
+              <span class="chart-axis-title"
+                >Contagios acumulados · promedio de réplicas</span
+              ><svg
+                id="simulation-chart"
+                viewBox="0 0 740 290"
+                role="img"
+                aria-labelledby="chart-title chart-description"
+              >
+                <title id="chart-title">Comparación de contagios</title>
+                <desc id="chart-description">
+                  Ejecuta la simulación para comparar tres estrategias.
+                </desc></svg
+              ><span class="chart-x-title">Días desde el primer caso</span>
+            </div>
+            <div class="result-metrics">
+              <div>
                 <span
-                  ><span class="tiny-square"></span> Resultados de una población
-                  sintética.</span
-                ><button type="button" id="download-results" disabled>
-                  Exportar resultados <svg><use href="#i-download" /></svg>
-                </button>
+                  >Contagios evitados
+                  <svg><use href="#i-diagonal" /></svg></span
+                ><strong id="saved-value">—</strong
+                ><small>frente a no intervenir</small>
               </div>
-              <div
-                id="simulation-announcement"
-                class="sr-only"
-                aria-live="polite"
-              ></div>
+              <div>
+                <span>Reducción del brote</span
+                ><strong id="reduction-value">—</strong
+                ><small>promedio de las réplicas</small>
+              </div>
+              <div>
+                <span>Rango observado</span><strong id="range-value">—</strong
+                ><small>mín. – máx. con estrategia</small>
+              </div>
+            </div>
+            <div
+              id="simulation-announcement"
+              class="sr-only"
+              aria-live="polite"
+            ></div>
+          </div>
+        </div>
+        <div class="comparison-panel reveal">
+          <div class="comparison-heading">
+            <div>
+              <span class="chart-eyebrow">LOS NÚMEROS, EN CONTEXTO</span>
+              <h3>Elige con evidencia.</h3>
+            </div>
+            <span id="comparison-config">Semilla 2026 · 12 réplicas</span>
+          </div>
+          <dl id="report-configuration" class="report-configuration"></dl>
+          <div class="comparison-table-wrap">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th scope="col">Decisión</th>
+                  <th scope="col">Contagios medios</th>
+                  <th scope="col">Rango observado</th>
+                  <th scope="col">Dosis usadas · media</th>
+                </tr>
+              </thead>
+              <tbody id="comparison-body">
+                <tr>
+                  <td colspan="4">Preparando comparación…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="recommendation">
+            <span class="recommendation-icon"
+              ><svg><use href="#i-shield" /></svg
+            ></span>
+            <div>
+              <span class="chart-eyebrow">UNA RECOMENDACIÓN PARA DECIDIR</span>
+              <p id="recommendation-text">
+                Ejecuta el escenario para ver una recomendación basada en sus
+                resultados.
+              </p>
+            </div>
+            <div class="export-actions">
+              <button
+                type="button"
+                id="download-results"
+                disabled
+                title="Descargar configuración y resultados JSON"
+              >
+                <svg><use href="#i-download" /></svg><span>Datos</span></button
+              ><button
+                type="button"
+                id="print-report"
+                title="Imprimir o guardar el informe en PDF"
+              >
+                <svg><use href="#i-print" /></svg><span>Informe</span>
+              </button>
             </div>
           </div>
-          <div class="lab-note reveal">
-            <span>UN EXPERIMENTO, NO UNA PREDICCIÓN.</span>
+        </div>
+        <div class="lab-note reveal">
+          <span><i class="live-dot"></i> EXPERIMENTAR PARA ENTENDER.</span>
+          <p>
+            Modelo ilustrativo sobre una población sintética. Los resultados no
+            describen un brote real de Manta ni sustituyen decisiones
+            sanitarias.
+          </p>
+          <a class="inline-link" href="#supuestos"
+            >Explorar los supuestos <svg><use href="#i-diagonal" /></svg
+          ></a>
+        </div>
+      </section>
+
+      <section id="supuestos" class="assumptions-section section-space">
+        <div class="container assumptions-layout">
+          <div class="assumptions-intro reveal">
+            <div class="section-kicker"><span>04 / SIN CAJAS NEGRAS</span></div>
+            <h2>
+              Tan importante<br />como el resultado:<br /><em
+                >poder explicarlo.</em
+              >
+            </h2>
             <p>
-              Esta demo usa supuestos simplificados y datos sintéticos. Explora
-              decisiones; no representa un brote real ni sustituye
-              recomendaciones sanitarias.
+              Geografía verificable. Supuestos visibles.<br />Resultados que
+              puedes reproducir.
             </p>
-            <a href="#supuestos">Ver supuestos <span>↓</span></a>
+            <a
+              class="inline-link"
+              href="https://github.com/MrCat7777/umbra-spookython-2026"
+              target="_blank"
+              rel="noopener"
+              >Explorar el código <svg><use href="#i-diagonal" /></svg
+            ></a>
+          </div>
+          <div class="accordion-list reveal">
+            <details>
+              <summary>
+                <span><small>01</small> ¿Qué es real y qué es simulado?</span
+                ><svg><use href="#i-plus" /></svg>
+              </summary>
+              <div>
+                La costa, las vías y los puntos de referencia son cartografía
+                real de OpenStreetMap. Los 240 agentes y sus contactos son
+                sintéticos. Sus posiciones sobre Manta son ilustrativas, no
+                domicilios ni registros de salud. La animación introductoria es
+                una secuencia cartográfica, no una grabación aérea.
+              </div>
+            </details>
+            <details>
+              <summary>
+                <span><small>02</small> ¿Cómo funciona el modelo SEIR?</span
+                ><svg><use href="#i-plus" /></svg>
+              </summary>
+              <div>
+                Una persona puede ser susceptible, expuesta, infecciosa o
+                recuperada/inmune. La latencia dura 2 días y el periodo
+                infeccioso 4. Cada contacto tiene una probabilidad diaria de
+                contagio. No hay reinfección ni mortalidad en esta demo; estos
+                supuestos no están calibrados clínicamente.
+              </div>
+            </details>
+            <details>
+              <summary>
+                <span><small>03</small> ¿La comparación es justa?</span
+                ><svg><use href="#i-plus" /></svg>
+              </summary>
+              <div>
+                Las estrategias comparten la misma red, estados iniciales y
+                sorteos de contagio en cada réplica. La estratégica y la
+                aleatoria disponen de las mismas dosis y eficacia. Se vacuna
+                sólo a susceptibles; si se retrasa la respuesta puede haber
+                menos personas elegibles. Las vacunas fallidas también consumen
+                dosis.
+              </div>
+            </details>
+            <details>
+              <summary>
+                <span><small>04</small> ¿Qué significan los rangos?</span
+                ><svg><use href="#i-plus" /></svg>
+              </summary>
+              <div>
+                Son el mínimo y máximo de contagios acumulados observados en las
+                réplicas, no intervalos de confianza. Las curvas muestran
+                promedios; el mapa reproduce la primera réplica. Con la misma
+                semilla y configuración obtienes el mismo resultado.
+              </div>
+            </details>
+            <details>
+              <summary>
+                <span
+                  ><small>05</small> ¿Qué falta para usarlo en la
+                  realidad?</span
+                ><svg><use href="#i-plus" /></svg>
+              </summary>
+              <div>
+                Datos de contactos y movilidad representativos, parámetros
+                validados, evaluación epidemiológica y controles de privacidad.
+                El motor actual es una herramienta educativa de comparación. El
+                despliegue en AWS, su región, costos y alerta de presupuesto se
+                documentan al configurar una cuenta real.
+              </div>
+            </details>
           </div>
         </div>
       </section>
-
-      <section id="supuestos" class="assumptions-section container">
-        <div class="assumptions-intro reveal">
-          <div class="section-eyebrow">
-            <span class="section-number">04</span> SIN CAJAS NEGRAS
-          </div>
-          <h2>
-            Transparente.<br /><span class="muted-word">Por diseño.</span>
-          </h2>
-          <p>Una buena estrategia también<br />debe poder explicarse.</p>
-          <div class="method-mark">
-            <svg><use href="#i-shield" /></svg> REPRODUCIBLE POR NATURALEZA
-          </div>
-        </div>
-        <div class="accordion-list reveal">
-          <details>
-            <summary>
-              <span><small>01</small> ¿Qué estamos simulando?</span
-              ><svg><use href="#i-plus" /></svg>
-            </summary>
-            <div class="details-content">
-              Una red sintética de 240 personas que representa contactos entre
-              hogares, mercado, escuela y transporte. El modelo usa cuatro
-              estados: susceptible, expuesto, infeccioso y recuperado. Los
-              parámetros son ilustrativos y no están calibrados con datos de
-              Manta.
-            </div>
-          </details>
-          <details>
-            <summary>
-              <span><small>02</small> ¿Cómo se decide a quién vacunar?</span
-              ><svg><use href="#i-plus" /></svg>
-            </summary>
-            <div class="details-content">
-              La estrategia prioriza a personas susceptibles con más conexiones.
-              La línea base aleatoria distribuye exactamente las mismas dosis
-              entre personas susceptibles. La tercera opción no interviene.
-              Nunca se vacuna a quienes ya están expuestos, infectados o
-              inmunizados.
-            </div>
-          </details>
-          <details>
-            <summary>
-              <span><small>03</small> ¿Por qué repetir la simulación?</span
-              ><svg><use href="#i-plus" /></svg>
-            </summary>
-            <div class="details-content">
-              Un buen resultado aislado puede ser suerte. Por eso comparamos
-              promedios de 12 réplicas y mostramos el rango de contagios de la
-              estrategia. La misma semilla y los mismos parámetros producen el
-              mismo resultado. Una estrategia puede rendir peor en algunos
-              escenarios.
-            </div>
-          </details>
-          <details>
-            <summary>
-              <span
-                ><small>04</small> ¿Qué significa el porcentaje de
-                contagio?</span
-              ><svg><use href="#i-plus" /></svg>
-            </summary>
-            <div class="details-content">
-              Es la probabilidad diaria de transmisión por cada contacto con una
-              persona infecciosa en este modelo simplificado. Las vacunas actúan
-              al inicio y se asumen completamente eficaces. La demo no incorpora
-              movilidad real, reinfecciones ni limitaciones hospitalarias.
-            </div>
-          </details>
-        </div>
-      </section>
-
       <section class="closing-section container reveal">
-        <div class="closing-glow" aria-hidden="true"></div>
-        <span class="section-eyebrow">EL FUTURO NO ESTÁ ESCRITO.</span>
-        <h2>Que el miedo no tome<br /><span>las decisiones.</span></h2>
+        <div class="closing-orbit" aria-hidden="true"></div>
+        <div class="eyebrow">
+          <span class="live-dot"></span> EL SIGUIENTE MOVIMIENTO ES TUYO
+        </div>
+        <h2>La ciudad sigue.<br /><em>Que tu estrategia también.</em></h2>
         <a class="button button-primary" href="#simulador"
-          >Toma el control <svg><use href="#i-arrow" /></svg></a
-        ><span class="closing-caption"
-          >Una ciudad. Una oportunidad. Tu estrategia.</span
-        >
+          >Vuelve a imaginar el escenario <svg><use href="#i-arrow" /></svg></a
+        ><span>Una ciudad. Infinitas conexiones. Una decisión a tiempo.</span>
       </section>
     </main>
     <footer class="site-footer container">
       <a class="brand" href="#inicio"
         ><img src="./favicon.svg" width="30" height="30" alt="" /><span
-          >UMBRA<span class="brand-dot">®</span></span
+          >umbra<span class="brand-period">.</span></span
         ></a
-      ><span class="footer-center">HECHO PARA PENSAR ANTES DE ACTUAR.</span
-      ><span class="footer-edition"
-        >Spookython 2026 <span> / </span> Track B <span> / </span> Manta,
-        EC</span
-      >
+      ><span>HECHO PARA PENSAR ANTES DE ACTUAR.</span>
+      <div><span>MANTA, EC</span><span>SPOOKYTHON 2026 / TRACK B</span></div>
     </footer>
     <noscript
       ><div class="noscript-note">
-        Activa JavaScript para ejecutar la demo. Puedes seguir explorando la
-        misión y los supuestos.
+        Activa JavaScript para explorar el mapa y ejecutar la simulación. La
+        misión y los supuestos siguen disponibles.
       </div></noscript
     >
   </body>

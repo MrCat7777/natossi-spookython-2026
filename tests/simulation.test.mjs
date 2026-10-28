@@ -98,3 +98,137 @@ test("origins change the seeded outbreak and invalid numeric inputs are rejected
     assert.throws(() => runComparison(options), RangeError);
   }
 });
+
+test("zero vaccine efficacy leaves every transmission trajectory unchanged", () => {
+  const result = runComparison({ vaccineEfficacy: 0, responseDay: 3 });
+  for (const strategy of ["strategic", "random"]) {
+    assert.deepEqual(result[strategy].series, result.baseline.series);
+    assert.deepEqual(result.timeline[strategy], result.timeline.baseline);
+    assert.equal(result[strategy].vaccinesEffective, 0);
+    assert.equal(result[strategy].vaccinesUsed, 40);
+  }
+  assert.equal(result.saved, 0);
+});
+
+test("delayed response starts on the requested day and excludes existing cases", () => {
+  const responseDay = 5;
+  const result = runComparison({ responseDay, vaccines: 240, runs: 1 });
+  for (const comparator of ["strategic", "random"]) {
+    assert.deepEqual(
+      result.timeline[comparator].slice(0, responseDay),
+      result.timeline.baseline.slice(0, responseDay),
+    );
+    const before = result.timeline.baseline[responseDay - 1];
+    const selected = result.interventions[comparator].vaccinations;
+    assert.equal(selected.length, before.filter((state) => state === 0).length);
+    assert.ok(
+      selected.every(
+        ({ node, stateBefore }) => before[node] === 0 && stateBefore === 0,
+      ),
+    );
+    assert.ok(
+      selected.every(
+        ({ node }) => result.timeline[comparator][responseDay][node] === 3,
+      ),
+    );
+  }
+  assert.equal(result.strategic.vaccinesUsed, result.random.vaccinesUsed);
+});
+
+test("network and first-replicate timelines agree with the SEIR population", () => {
+  const result = runComparison({ runs: 1, initialInfected: 6, responseDay: 2 });
+  assert.equal(result.network.nodes.length, result.population);
+  const degree = Array(result.population).fill(0);
+  const edges = new Set();
+  for (const [a, b] of result.network.edges) {
+    assert.ok(a < b && a >= 0 && b < result.population);
+    assert.ok(!edges.has(`${a}-${b}`));
+    edges.add(`${a}-${b}`);
+    degree[a]++;
+    degree[b]++;
+  }
+  result.network.nodes.forEach((node, id) => {
+    assert.equal(node.id, id);
+    assert.equal(node.degree, degree[id]);
+    assert.ok(node.sector >= 0 && node.sector <= 3);
+  });
+  for (const comparator of ["strategic", "random", "baseline"]) {
+    const timeline = result.timeline[comparator];
+    assert.equal(timeline.length, result.days + 1);
+    for (const [day, states] of timeline.entries()) {
+      assert.equal(states.length, result.population);
+      const counts = [0, 0, 0, 0];
+      for (const state of states) {
+        assert.ok(Number.isInteger(state) && state >= 0 && state <= 3);
+        counts[state]++;
+      }
+      const point = result[comparator].series[day];
+      assert.deepEqual(counts, [
+        point.susceptible,
+        point.exposed,
+        point.infected,
+        point.recovered,
+      ]);
+    }
+    assert.equal(timeline[0].filter((state) => state === 2).length, 6);
+    assert.equal(timeline[0].filter((state) => state === 1).length, 2);
+  }
+});
+
+test("partial vaccine efficacy and bridge response remain reproducible and budget matched", () => {
+  const config = {
+    vaccineEfficacy: 0.5,
+    initialInfected: 4,
+    responseDay: 2,
+    strategy: "bridge",
+    adaptive: true,
+  };
+  const first = runComparison(config);
+  assert.deepEqual(first, runComparison(config));
+  assert.equal(first.strategy, "bridge");
+  assert.equal(first.adaptive, true);
+  assert.equal(first.strategic.vaccinesUsed, first.random.vaccinesUsed);
+  for (const comparator of ["strategic", "random"]) {
+    assert.ok(first[comparator].vaccinesEffective > 0);
+    assert.ok(
+      first[comparator].vaccinesEffective < first[comparator].vaccinesUsed,
+    );
+    assert.equal(first[comparator].iterationTotals.length, first.runs);
+    assert.equal(
+      Math.min(...first[comparator].iterationTotals),
+      first[comparator].range[0],
+    );
+    assert.equal(
+      Math.max(...first[comparator].iterationTotals),
+      first[comparator].range[1],
+    );
+  }
+});
+
+test("surprise outbreak inputs are honored and invalid response controls are rejected", () => {
+  const surprise = runComparison({
+    initialInfected: 12,
+    transmission: 0.56,
+    vaccines: 20,
+    vaccineEfficacy: 0.5,
+    origin: "transporte",
+  });
+  assert.equal(surprise.baseline.series[0].infected, 12);
+  assert.equal(surprise.baseline.series[0].exposed, 2);
+  assert.equal(surprise.transmission, 0.56);
+  assert.equal(surprise.vaccines, 20);
+  assert.equal(surprise.origin, "transporte");
+  for (const config of [
+    { initialInfected: 0 },
+    { initialInfected: 239 },
+    { initialInfected: 1.5 },
+    { responseDay: -1 },
+    { responseDay: 31 },
+    { vaccineEfficacy: -0.1 },
+    { vaccineEfficacy: 1.1 },
+    { vaccineEfficacy: NaN },
+    { strategy: "unknown" },
+  ])
+    assert.throws(() => runComparison(config), RangeError);
+  assert.throws(() => runComparison({ adaptive: "yes" }), TypeError);
+});

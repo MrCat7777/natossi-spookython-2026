@@ -1,82 +1,103 @@
 # UMBRA
 
-Landing interactiva para el Track B «La plaga zombie»: una experiencia de Halloween que presenta una herramienta de contención de brotes en Manta. Combina una estética oscura, acentos naranja y violeta, animaciones de aparición y una demo de simulación que se ejecuta en el navegador.
+Una experiencia interactiva para el Track B «La plaga zombie» de Spookython 2026. UMBRA convierte un escenario de contención en Manta en una secuencia visual: recorre la ciudad, observa cómo se conecta un brote y compara decisiones con recursos limitados.
 
-El proyecto es HTML, CSS y JavaScript estático. No requiere un proceso de compilación ni credenciales para ejecutar la demo.
+La interfaz combina una introducción cartográfica ligada al scroll, un mapa local de Manta y un laboratorio de simulación reproducible. Es HTML, CSS y JavaScript estático; la demo no necesita un backend ni credenciales.
 
 ## Ejecutar localmente
 
-Desde esta carpeta:
+Con Python 3 y Node.js 22 disponibles, desde esta carpeta:
 
 ```bash
-python3 -m http.server 4173 --directory dist
+npm run dev
 ```
 
-Abre <http://localhost:4173>. Se necesita un servidor HTTP para cargar los módulos JavaScript; abrir `index.html` directamente como archivo puede impedir su carga.
+Abre <http://localhost:4173>. También puedes ejecutar `python3 -m http.server 4173 --directory dist`. Usa un servidor HTTP: los módulos y los datos del mapa no se cargan de forma fiable al abrir `index.html` como archivo.
 
-Para ejecutar las pruebas del motor, con Node.js 22:
+Para comprobar el motor:
 
 ```bash
-node --test tests/*.test.mjs
+npm test
 ```
 
-## Qué puedes presentar
+La suite incluye 12 pruebas de reproducibilidad, conservación de la población, asignación de dosis, eficacia parcial, respuesta diferida y coherencia de los estados utilizados por el mapa.
 
-- Una landing responsiva que explica el problema y conduce a la demo.
-- Una comparación de tres decisiones sobre una misma población sintética: sin intervención, vacunación al azar y vacunación priorizada por número de contactos.
-- Parámetros modificables para explorar cómo cambia el resultado y una semilla para repetir el experimento.
-- Resultados calculados en el navegador, con promedios de varias ejecuciones; los valores de la demo no son estadísticas reales de Manta.
+## Recorrido de la demo
+
+1. **Explorar Manta.** La introducción utiliza un vídeo cartográfico local de ocho segundos cuyo avance sigue el scroll. La cartografía base procede de OpenStreetMap y no requiere descargar teselas durante la presentación.
+2. **Definir el escenario.** Cambia el punto inicial, contagio, dosis, casos iniciales, eficacia, día de respuesta y semilla. Elige 12, 32 o 64 réplicas, priorización por grado o una heurística de conexiones entre sectores, y una respuesta adaptativa opcional.
+3. **Comparar decisiones.** Ejecuta la estrategia, la vacunación aleatoria con el mismo presupuesto y la ausencia de intervención. Las curvas, la tabla y los rangos muestran resultados calculados.
+4. **Recorrer el brote.** Reproduce o selecciona un día y una estrategia sobre el mapa. Esta animación representa la primera réplica, mientras las curvas y métricas resumen todas las réplicas.
+5. **Probar un brote sorpresa.** Duplica el contagio, reduce a la mitad las dosis, mueve el inicio al transporte o establece una eficacia del 50 %. Los atajos modifican parámetros del mismo modelo.
+6. **Compartir el resultado.** Exporta el experimento como JSON o imprime un resumen con la configuración y la comparación.
+
+La interfaz respeta `prefers-reduced-motion`: evita el scrubbing y la reproducción automática del vídeo cuando se solicita movimiento reducido. Los controles siguen disponibles y el contenido puede recorrerse sin depender de las transiciones.
+
+## Geografía real, población sintética
+
+`dist/assets/manta-map.json` conserva geometría y referencias cartográficas de Manta obtenidas de OpenStreetMap. Las fuentes, la atribución y el tratamiento de los datos se describen en [docs/mapa-manta.md](docs/mapa-manta.md).
+
+Las personas, sus contactos y sus ubicaciones superpuestas son **sintéticos**. No representan domicilios, desplazamientos, pacientes ni registros sanitarios reales. La cartografía da contexto geográfico a la demo; no calibra el modelo epidemiológico.
 
 ## Modelo y supuestos
 
-La demo utiliza una red sintética con hogares de cinco personas, cuatro personas que actúan como nodos de encuentro y un 10 % de probabilidad de añadir un contacto entre grupos. «Manta» es el contexto narrativo: no se han importado datos censales, coordenadas reales ni registros de salud. Esta estructura favorece especialmente la protección de los nodos con muchos contactos.
+La red contiene hogares de cinco personas, cuatro nodos de encuentro y un 10 % de probabilidad de añadir un contacto entre grupos. Su estructura favorece especialmente la protección de nodos con muchos contactos; no es una estimación de la red social real de Manta.
 
-Los estados son susceptible, expuesto, infeccioso y recuperado o inmune. Cada contacto infeccioso aporta una probabilidad diaria de transmisión; con `n` contactos se combina como `1 − (1 − p)^n`. La latencia dura dos días y el periodo infeccioso cuatro. El escenario comienza con un nodo infeccioso y dos contactos expuestos. Las dosis se asignan al inicio, únicamente a personas susceptibles. La intervención estratégica prioriza personas con más conexiones; la aleatoria utiliza el mismo número de dosis. La línea base no recibe dosis.
+El modelo usa cuatro estados: susceptible, expuesto, infeccioso y recuperado o inmune. Cada contacto infeccioso aporta una probabilidad diaria de transmisión; con `n` contactos se combina como `1 − (1 − p)^n`. La exposición dura dos días y el periodo infeccioso cuatro. Además de los casos iniciales seleccionados, el escenario comienza con dos personas expuestas.
 
-Configuración inicial del motor:
+Las dosis se asignan una sola vez, antes de transmitir el día de respuesta elegido. El día cero significa antes del inicio de la simulación. Sólo se vacuna a personas susceptibles. Cada dosis consume presupuesto y tiene la probabilidad de éxito indicada por la eficacia; una dosis exitosa confiere inmunidad inmediata.
 
-| Parámetro                                | Valor        |
-| ---------------------------------------- | ------------ |
-| Población sintética                      | 240 personas |
-| Horizonte                                | 30 días      |
-| Probabilidad de transmisión por contacto | 0,28         |
-| Dosis disponibles                        | 40           |
-| Semilla                                  | 2026         |
-| Repeticiones                             | 12           |
-| Punto inicial                            | Mercado      |
+La estrategia por **grado** prioriza a quienes tienen más conexiones. La opción **puentes** pondera los contactos entre sectores y el grado de sus vecinos; es una heurística explicable, no centralidad de intermediación exacta. La respuesta **adaptativa** prioriza a las personas susceptibles vecinas de casos infecciosos al momento de intervenir.
 
-Las tres estrategias comparten red, estados iniciales y sorteos de contagio para cada repetición. La misma configuración y semilla producen el mismo resultado. El motor devuelve medias y el rango mínimo–máximo observado de infecciones acumuladas; ese rango no es un intervalo de confianza. La comparación informa diferencias del modelo; una estrategia puede rendir de manera distinta al cambiar las condiciones.
+| Parámetro inicial                              | Valor                           |
+| ---------------------------------------------- | ------------------------------- |
+| Población sintética                            | 240 personas                    |
+| Horizonte                                      | 30 días                         |
+| Probabilidad de transmisión por contacto y día | 0,28                            |
+| Dosis disponibles                              | 40                              |
+| Casos infecciosos iniciales                    | 1                               |
+| Eficacia de la intervención                    | 100 %                           |
+| Día de respuesta                               | 0                               |
+| Estrategia                                     | Grado, sin respuesta adaptativa |
+| Semilla                                        | 2026                            |
+| Réplicas por estrategia                        | 12                              |
+| Punto inicial                                  | Mercado                         |
 
-Las dosis representan inmunidad inmediata en este escenario simplificado. No se modelan capacidad hospitalaria, mortalidad, reinfección, desplazamientos reales ni eficacia clínica. No existe calibración epidemiológica: la simulación sirve para una demostración de producto y algoritmos, y no para tomar decisiones sanitarias.
+Las tres estrategias comparten red, estados iniciales y sorteos de contagio para cada réplica. La intervención aleatoria y la estratégica utilizan el mismo presupuesto; la línea base no recibe dosis. La misma configuración y semilla producen el mismo resultado.
+
+Las curvas muestran medias de contagios acumulados. El rango indica el mínimo y máximo observados, **no un intervalo de confianza**. El mapa reproduce los estados de la primera réplica y no debe interpretarse como la curva media. El JSON incluye configuración, medias, totales por réplica, red sintética y estados diarios de esa primera réplica.
+
+La comparación informa infecciones evitadas dentro del modelo; no equivale a vidas salvadas. No se modelan mortalidad, capacidad hospitalaria, reinfección ni movilidad real. Los parámetros son ilustrativos y no están calibrados para tomar decisiones sanitarias.
 
 ## Estructura
 
 ```text
 umbra/
-├── dist/                     # Carpeta completa que debe servir el hosting
+├── dist/                     # Contenido completo del hosting
 │   ├── index.html
 │   ├── styles.css
-│   ├── app.js                # Controles, navegación y gráficos
-│   ├── assets/               # Recursos visuales
+│   ├── app.js                # Interfaz, scroll, mapa y resultados
+│   ├── assets/               # Cartografía y vídeo locales
 │   └── simulation.js         # Motor reproducible
 ├── tests/
 │   └── simulation.test.mjs
 ├── docs/
-│   └── arquitectura.md
+│   ├── arquitectura.md
+│   └── mapa-manta.md
 └── README.md
 ```
 
-La imagen de portada se sirve en WebP para mantener ligera la carga inicial. El motor se ejecuta localmente y no envía la configuración de simulación a un backend.
+El motor se ejecuta en el navegador y no envía la configuración a un servicio remoto. La demo no guarda resultados en un servidor. El archivo JSON se descarga en el dispositivo y el informe usa la impresión del navegador.
 
 ## Despliegue en AWS
 
-La arquitectura propuesta es un bucket S3 privado con distribución CloudFront y Origin Access Control (OAC), descrita en [docs/arquitectura.md](docs/arquitectura.md). Publica el contenido de `dist/` en la raíz del bucket y configura `index.html` como documento raíz de CloudFront. Usa HTTPS y restringe la lectura del bucket a esa distribución.
+La propuesta es un bucket S3 privado servido mediante CloudFront y Origin Access Control (OAC), descrita en [docs/arquitectura.md](docs/arquitectura.md). Publica el contenido de `dist/` en la raíz del bucket, configura `index.html` como documento raíz de CloudFront y conserva las rutas de los recursos. Verifica los tipos MIME de JavaScript, JSON y MP4 y la reproducción del vídeo desde la distribución HTTPS.
 
-**Estado:** despliegue en AWS pendiente. Para completar la entrega, configura y comprueba la distribución de CloudFront, registra su URL y región, y añade una captura del AWS Budget con alerta. La vista previa de la interfaz es independiente del despliegue AWS.
+**Estado: despliegue en AWS pendiente.** Para completar la entrega, crea y comprueba la distribución en la cuenta del equipo, registra su URL y región y añade la captura del AWS Budget con alerta. La vista previa alojada de la interfaz es independiente del requisito AWS.
 
 ## Costos
 
-Estima la operación en [AWS Pricing Calculator](https://calculator.aws/) con la región y el tráfico esperado:
+Estima la operación en [AWS Pricing Calculator](https://calculator.aws/) con la región, tamaño de los recursos y tráfico esperado:
 
 ```text
 Costo mensual ≈ almacenamiento S3
@@ -86,7 +107,7 @@ Costo mensual ≈ almacenamiento S3
               + servicios opcionales contratados
 ```
 
-Registra las cantidades y tarifas empleadas, las condiciones del plan de tu cuenta y el gasto real que aparezca en AWS Billing. Configura una alerta de presupuesto antes de publicar recursos.
+El vídeo debe incluirse en el cálculo de transferencia. Registra cantidades y tarifas, condiciones del plan de la cuenta y gasto real en AWS Billing. Configura la alerta de presupuesto antes de publicar recursos.
 
 ## Desarrollo
 

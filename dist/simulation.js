@@ -10,9 +10,11 @@
  * Each infectious neighbour contributes `transmission` probability per day;
  * independent exposures combine as 1 - (1 - transmission)^neighbours.
  * Exposure lasts two days; infectiousness lasts four. Recovery and the
- * preventive intervention provide complete immunity for the 30-day default
- * horizon. Vaccination occurs once, before day one, and never targets an
- * already exposed, infectious, or immune person. Vaccine effect is immediate.
+ * preventive intervention provide complete immunity by default. Vaccination
+ * occurs once on responseDay (before transmission that day), only targeting
+ * susceptible people. Each dose succeeds with vaccineEfficacy probability; a
+ * successful dose provides immediate immunity. The defaults preserve the
+ * original experiment: one infectious person and a response before day one.
  * These are explanatory assumptions, not calibrated medical parameters.
  *
  * All three strategies share each run's graph, initial states, and keyed
@@ -65,30 +67,108 @@ function buildGraph(population, seed) {
   return graph.map((contacts) => [...contacts]);
 }
 
-function initialStates(graph, origin) {
+function initialStates(graph, origin, initialInfected) {
   const states = new Uint8Array(graph.length);
   const patientZero = ORIGINS[origin];
   states[patientZero] = 2;
-  const exposed = graph[patientZero].filter((node) => node >= 4).slice(0, 2);
+  const nearby = graph[patientZero].filter((node) => node >= 4);
+  const candidates = [...nearby, ...graph.keys()].filter(
+    (node, index, all) => node !== patientZero && all.indexOf(node) === index,
+  );
+  for (const node of candidates.slice(0, initialInfected - 1)) states[node] = 2;
+  const exposed = [...nearby, ...graph.keys()]
+    .filter(
+      (node, index, all) => states[node] === 0 && all.indexOf(node) === index,
+    )
+    .slice(0, 2);
   for (const node of exposed) states[node] = 1;
   return states;
 }
 
-function simulate(graph, initial, config, strategy, seed) {
-  const { population, days, transmission, vaccines } = config;
-  const states = initial.slice();
-  const age = new Uint8Array(population);
-  const susceptible = [...states.keys()].filter((node) => states[node] === 0);
-  if (strategy === "strategic") {
-    susceptible.sort((a, b) => graph[b].length - graph[a].length || a - b);
-  } else if (strategy === "random") {
-    susceptible.sort(
-      (a, b) => randomAt(seed, a, 991) - randomAt(seed, b, 991) || a - b,
+function sectorOf(node) {
+  return node < 4 ? node : Math.floor((node - 4) / 5) % 4;
+}
+
+function interventionScore(graph, states, node, config) {
+  const degree = graph[node].length;
+  let score = degree;
+  if (config.strategy === "bridge") {
+    // A cheap, explainable bridge heuristic; this is not betweenness centrality.
+    score += graph[node].reduce(
+      (sum, neighbor) =>
+        sum +
+        (sectorOf(neighbor) !== sectorOf(node) ? 3 : 0) +
+        graph[neighbor].length / graph.length,
+      0,
     );
   }
-  const vaccinesUsed =
-    strategy === "baseline" ? 0 : Math.min(vaccines, susceptible.length);
-  for (let i = 0; i < vaccinesUsed; i++) states[susceptible[i]] = 3;
+  if (config.adaptive) {
+    // On the response day, prefer susceptible people bordering active cases.
+    const infectiousNeighbors = graph[node].reduce(
+      (sum, neighbor) => sum + Number(states[neighbor] === 2),
+      0,
+    );
+    score += infectiousNeighbors * graph.length;
+  }
+  return score;
+}
+
+function describeNetwork(graph) {
+  return {
+    nodes: graph.map((contacts, id) => ({
+      id,
+      sector: sectorOf(id),
+      degree: contacts.length,
+    })),
+    edges: graph.flatMap((contacts, node) =>
+      contacts
+        .filter((neighbor) => neighbor > node)
+        .map((neighbor) => [node, neighbor]),
+    ),
+  };
+}
+
+function simulate(graph, initial, config, comparator, seed, captureTimeline) {
+  const {
+    population,
+    days,
+    transmission,
+    vaccines,
+    responseDay,
+    vaccineEfficacy,
+  } = config;
+  const states = initial.slice();
+  const age = new Uint8Array(population);
+  let vaccinesUsed = 0;
+  let vaccinesEffective = 0;
+  const vaccinations = [];
+  const timeline = captureTimeline ? [] : null;
+  const vaccinate = () => {
+    if (comparator === "baseline") return;
+    const susceptible = [...states.keys()].filter((node) => states[node] === 0);
+    if (comparator === "strategic") {
+      const scores = graph.map((_, node) =>
+        interventionScore(graph, states, node, config),
+      );
+      susceptible.sort((a, b) => scores[b] - scores[a] || a - b);
+    } else {
+      susceptible.sort(
+        (a, b) => randomAt(seed, a, 991) - randomAt(seed, b, 991) || a - b,
+      );
+    }
+    vaccinesUsed = Math.min(vaccines, susceptible.length);
+    for (const node of susceptible.slice(0, vaccinesUsed)) {
+      const effective =
+        randomAt(seed, node, 100000 + responseDay) < vaccineEfficacy;
+      if (captureTimeline)
+        vaccinations.push({ node, stateBefore: states[node], effective });
+      if (effective) {
+        states[node] = 3;
+        vaccinesEffective++;
+      }
+    }
+  };
+  if (responseDay === 0) vaccinate();
   let cumulative = states.reduce(
     (sum, state) => sum + Number(state === 1 || state === 2),
     0,
@@ -105,9 +185,11 @@ function simulate(graph, initial, config, strategy, seed) {
       recovered: counts[3],
       cumulative,
     });
+    if (captureTimeline) timeline.push(Array.from(states));
   };
   snapshot(0);
   for (let day = 1; day <= days; day++) {
+    if (responseDay === day) vaccinate();
     const next = states.slice();
     for (let person = 0; person < population; person++) {
       if (states[person] === 0) {
@@ -136,6 +218,9 @@ function simulate(graph, initial, config, strategy, seed) {
     totalInfected: cumulative,
     peak: Math.max(...series.map((point) => point.infected)),
     vaccinesUsed,
+    vaccinesEffective,
+    timeline,
+    vaccinations,
   };
 }
 
@@ -162,7 +247,12 @@ function aggregate(results) {
     totalInfected: totals.reduce((sum, value) => sum + value, 0) / count,
     peak: results.reduce((sum, result) => sum + result.peak, 0) / count,
     range: [Math.min(...totals), Math.max(...totals)],
-    vaccinesUsed: results[0].vaccinesUsed,
+    vaccinesUsed:
+      results.reduce((sum, result) => sum + result.vaccinesUsed, 0) / count,
+    vaccinesEffective:
+      results.reduce((sum, result) => sum + result.vaccinesEffective, 0) /
+      count,
+    iterationTotals: totals,
   };
 }
 
@@ -183,19 +273,70 @@ export function runComparison(options = {}) {
   if (!Number.isFinite(transmission) || transmission < 0 || transmission > 1) {
     throw new RangeError("transmission must be between 0 and 1.");
   }
+  const initialInfected = integer(
+    options.initialInfected,
+    1,
+    1,
+    population - 2,
+    "initialInfected",
+  );
+  const responseDay = integer(options.responseDay, 0, 0, days, "responseDay");
+  const vaccineEfficacy =
+    options.vaccineEfficacy === undefined ? 1 : Number(options.vaccineEfficacy);
+  if (
+    !Number.isFinite(vaccineEfficacy) ||
+    vaccineEfficacy < 0 ||
+    vaccineEfficacy > 1
+  ) {
+    throw new RangeError("vaccineEfficacy must be between 0 and 1.");
+  }
+  const strategy = options.strategy === undefined ? "degree" : options.strategy;
+  if (!["degree", "bridge"].includes(strategy)) {
+    throw new RangeError("strategy must be degree or bridge.");
+  }
+  const adaptive = options.adaptive === undefined ? false : options.adaptive;
+  if (typeof adaptive !== "boolean")
+    throw new TypeError("adaptive must be a boolean.");
   const origin = Object.hasOwn(ORIGINS, options.origin)
     ? options.origin
     : "mercado";
-  const config = { population, days, transmission, vaccines };
+  const config = {
+    population,
+    days,
+    transmission,
+    vaccines,
+    initialInfected,
+    responseDay,
+    vaccineEfficacy,
+    strategy,
+    adaptive,
+  };
   const results = { strategic: [], random: [], baseline: [] };
+  const timeline = {};
+  const interventions = {};
+  let network;
   for (let run = 0; run < runs; run++) {
     const runSeed = (seed + Math.imul(run + 1, 0x9e3779b1)) >>> 0;
     const graph = buildGraph(population, runSeed);
-    const initial = initialStates(graph, origin);
-    for (const strategy of Object.keys(results)) {
-      results[strategy].push(
-        simulate(graph, initial, config, strategy, runSeed),
+    const initial = initialStates(graph, origin, initialInfected);
+    if (run === 0) network = describeNetwork(graph);
+    for (const comparator of Object.keys(results)) {
+      const result = simulate(
+        graph,
+        initial,
+        config,
+        comparator,
+        runSeed,
+        run === 0,
       );
+      results[comparator].push(result);
+      if (run === 0) {
+        timeline[comparator] = result.timeline;
+        interventions[comparator] = {
+          day: responseDay,
+          vaccinations: result.vaccinations,
+        };
+      }
     }
   }
   const strategic = aggregate(results.strategic);
@@ -217,5 +358,13 @@ export function runComparison(options = {}) {
     origin,
     transmission,
     vaccines,
+    initialInfected,
+    responseDay,
+    vaccineEfficacy,
+    strategy,
+    adaptive,
+    network,
+    timeline,
+    interventions,
   };
 }
