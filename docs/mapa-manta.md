@@ -46,3 +46,17 @@ out geom;
 Tarqui se verificó adicionalmente con una consulta puntual a [Nominatim de OpenStreetMap](https://nominatim.openstreetmap.org/search?q=Tarqui%2C%20Manta%2C%20Ecuador&format=jsonv2&limit=3), que devolvió el nodo de suburbio 10213104581.
 
 El área ampliada permite unir tramos completos antes de recortar y simplificar. No se han inferido carreteras ni trazado calles ficticias.
+
+## Imagen satelital de referencia
+
+`dist/assets/manta-satellite.webp` contiene una única imagen cartográfica exportada del servicio público **Esri World Imagery**. El metadato reproducible está en `dist/assets/manta-satellite.json`: resolución de **2200 × 1800 píxeles**, referencia **WGS84 / EPSG:4326**, y extensión `[-80.785, -1.005, -80.675, -0.915]`. La extensión devuelta por el servicio coincide con ese recorte salvo redondeo numérico. Las calles OSM y la imagen se alinean usando sus coordenadas geográficas; no se trata de una imagen generada.
+
+La fotografía representa imágenes de archivo del proveedor. No es una cámara ni un satélite en vivo; sólo las animaciones de la simulación se calculan en tiempo de ejecución. La fecha exacta de captura puede variar entre las imágenes que forman el mosaico y no se afirma una fecha de adquisición concreta.
+
+Atribución que debe permanecer visible: **Esri, Vantor, Earthstar Geographics, and the GIS User Community**. La capa vectorial sigue requiriendo además **© OpenStreetMap contributors**.
+
+- [Servicio Esri World Imagery y metadatos](https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer)
+- [Elemento oficial y términos del proveedor](https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9)
+- [Operación oficial Export Map](https://developers.arcgis.com/rest/services-reference/enterprise/export-map/)
+
+Se obtuvo una sola imagen mediante la operación `export` del servicio MapServer, con `bboxSR=4326`, `imageSR=4326` y `size=2200,1800`. No se descargó un paquete de teselas ni se realizó una extracción masiva del servicio. La imagen conserva los términos de Esri y sus proveedores; no se incluye bajo la licencia ODbL de los datos OSM. La ficha oficial distingue esta capa del servicio específico destinado a exportar teselas para uso sin conexión.

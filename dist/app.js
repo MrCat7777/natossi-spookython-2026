@@ -30,6 +30,8 @@ let playbackTimer = null;
 let didAutoPlay = false;
 let mapInView = false;
 let currentView = "map";
+let sceneLive = !reducedMotion.matches;
+let sceneZoom = 1;
 
 initMotion();
 
@@ -281,7 +283,13 @@ if ("IntersectionObserver" in window)
     { threshold: 0.3 },
   ).observe($("#view-map"));
 reducedMotion.addEventListener("change", () => {
-  if (reducedMotion.matches) stopPlayback();
+  if (reducedMotion.matches) {
+    stopPlayback();
+    sceneLive = false;
+  } else {
+    sceneLive = true;
+  }
+  syncSceneLive();
 });
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) stopPlayback();
@@ -459,6 +467,7 @@ fetch("./assets/manta-map.json")
       labels: true,
     });
     outbreakMap = new MantaMap($("#outbreak-map"), data, { labels: false });
+    outbreakMap.setLive(sceneLive);
     if (latestResult) {
       outbreakMap.setSimulation(latestResult);
       setDay(day);
@@ -503,7 +512,7 @@ $("#use-place").addEventListener("click", () => {
 $("#download-results").addEventListener("click", () => {
   if (!latestResult) return;
   const exported = {
-    project: "UMBRA",
+    project: "NATOSSI",
     model: "SEIR sobre red sintética, sin calibración clínica",
     cartography:
       "© OpenStreetMap contributors — https://www.openstreetmap.org/copyright",
@@ -524,7 +533,7 @@ $("#download-results").addEventListener("click", () => {
   const url = URL.createObjectURL(blob),
     link = document.createElement("a");
   link.href = url;
-  link.download = `umbra-semilla-${latestResult.seed}.json`;
+  link.download = `natossi-semilla-${latestResult.seed}.json`;
   document.body.append(link);
   link.click();
   link.remove();
@@ -538,3 +547,76 @@ window.addEventListener("beforeprint", resizeChartLabels);
 syncRanges(false);
 setDay(0);
 executeSimulation();
+
+function syncSceneLive() {
+  outbreakMap?.setLive(sceneLive);
+  const button = $("#scene-live-toggle");
+  button.setAttribute("aria-pressed", String(sceneLive));
+  button.setAttribute(
+    "aria-label",
+    sceneLive
+      ? "Pausar movimiento de personajes"
+      : "Activar movimiento de personajes",
+  );
+  button.innerHTML = sceneLive
+    ? "Pausar movimiento <span>Ⅱ</span>"
+    : "Activar movimiento <span>▷</span>";
+  $(".scene-live-badge").classList.toggle("is-paused", !sceneLive);
+}
+$("#scene-live-toggle").addEventListener("click", () => {
+  sceneLive = !sceneLive;
+  syncSceneLive();
+});
+syncSceneLive();
+$("#scene-zoom-toggle").addEventListener("click", () => {
+  sceneZoom = sceneZoom === 3 ? 1 : sceneZoom + 1;
+  outbreakMap?.setZoom(sceneZoom);
+  const button = $("#scene-zoom-toggle");
+  button.innerHTML = `${sceneZoom === 3 ? "Ver toda la ciudad" : "Acercar al foco"} <span>${sceneZoom === 1 ? "1" : sceneZoom === 2 ? "1,8" : "2,8"}×</span>`;
+  button.setAttribute(
+    "aria-label",
+    sceneZoom === 3
+      ? "Volver a la vista completa"
+      : "Acercar al foco del brote",
+  );
+});
+
+const bioStates = [
+  [
+    "ESTADO 01 / SUSCEPTIBLE",
+    "Todavía sano. Puede contagiarse al entrar en contacto con una persona infecciosa. Protegerlo a tiempo puede interrumpir una cadena.",
+  ],
+  [
+    "ESTADO 02 / EXPUESTO",
+    "El contagio ya ocurrió, pero todavía no transmite. En el modelo, esta etapa dura dos días antes de convertirse en infeccioso.",
+  ],
+  [
+    "ESTADO 03 / ZOMBIE",
+    "La infección está activa. Cada conexión susceptible puede abrir una nueva cadena de contagio. El periodo infeccioso del modelo dura cuatro días.",
+  ],
+  [
+    "ESTADO 04 / INMUNE",
+    "Se recuperó o recibió una dosis eficaz. Durante esta simulación ya no se contagia: una conexión protegida puede cambiar todo el recorrido.",
+  ],
+];
+document.querySelectorAll("[data-bio]").forEach((button) =>
+  button.addEventListener("click", () => {
+    const index = Number(button.dataset.bio);
+    document.querySelectorAll("[data-bio]").forEach((item) => {
+      const active = item === button;
+      item.classList.toggle("is-active", active);
+      item.setAttribute("aria-pressed", String(active));
+    });
+    $("#bio-state-index").textContent = bioStates[index][0];
+    $("#bio-state-description").textContent = bioStates[index][1];
+    $(".threat-section").dataset.state = String(index);
+    if (!reducedMotion.matches)
+      $(".bio-description").animate(
+        [
+          { opacity: 0.25, transform: "translateY(6px)" },
+          { opacity: 1, transform: "translateY(0)" },
+        ],
+        { duration: 450, easing: "cubic-bezier(.22,1,.36,1)" },
+      );
+  }),
+);

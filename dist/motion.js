@@ -9,7 +9,7 @@ export function initMotion() {
   const section = document.querySelector(".intro-scroll");
   const sticky = section?.querySelector(".intro-sticky");
   const video = document.getElementById("intro-video");
-  const frames = [0, 1, 2].map((index) =>
+  const frames = [0, 1, 2, 3, 4].map((index) =>
     document.getElementById(`intro-frame-${index}`),
   );
   const chapterButtons = [...document.querySelectorAll(".chapter-button")];
@@ -25,14 +25,16 @@ export function initMotion() {
     "(hover: hover) and (pointer: fine)",
   );
   const reveals = [...document.querySelectorAll(".reveal")];
-  const chapterTargets = [0, 0.45, 0.84];
+  const chapterTargets = [0, 0.27, 0.47, 0.67, 0.9];
   const telemetry = [
-    ["Una ciudad en movimiento.", "Cartografía real · OpenStreetMap"],
-    ["Una conexión lo cambia todo.", "Brote hipotético · población sintética"],
+    ["Manta. Real desde el espacio.", "Imágenes satelitales · archivo Esri"],
+    ["Un caso. Infinitas conexiones.", "Escenario de ficción · Track B"],
+    ["Cada contacto abre un camino.", "La amenaza avanza con el tiempo"],
     [
-      "Elegir dónde cambia el impacto.",
-      "Respuesta dirigida · recursos limitados",
+      "Intervenir cambia el desenlace.",
+      "Dosis limitadas · prioridad estratégica",
     ],
+    ["Tu decisión empieza ahora.", "Simula · compara · vuelve a decidir"],
   ];
   const navigationLinks = [
     ...document.querySelectorAll(".desktop-nav a, .mobile-nav a"),
@@ -108,19 +110,23 @@ export function initMotion() {
 
   function showChapter(chapter, progress) {
     const opacities = reducedMotion
-      ? [1, 0, 0]
-      : [
-          1 - smoothstep((progress - 0.23) / 0.08),
-          smoothstep((progress - 0.27) / 0.08) *
-            (1 - smoothstep((progress - 0.59) / 0.08)),
-          smoothstep((progress - 0.63) / 0.08),
-        ];
+      ? [1, 0, 0, 0, 0]
+      : frames.map((_, index) => {
+          const start = index * 0.2;
+          const end = (index + 1) * 0.2;
+          const enter =
+            index === 0 ? 1 : smoothstep((progress - (start - 0.045)) / 0.09);
+          const leave =
+            index === frames.length - 1
+              ? 1
+              : 1 - smoothstep((progress - (end - 0.045)) / 0.09);
+          return enter * leave;
+        });
 
     frames.forEach((frame, index) => {
       if (!frame) return;
       const opacity = opacities[index];
-      const direction =
-        index === 0 || (index === 1 && progress > 0.46) ? -1 : 1;
+      const direction = progress > (index + 0.5) * 0.2 ? -1 : 1;
       const offset = reducedMotion ? 0 : (1 - opacity) * 25 * direction;
       const active = index === chapter;
       frame.style.opacity = opacity.toFixed(3);
@@ -162,8 +168,9 @@ export function initMotion() {
         const progress = reducedMotion
           ? 0
           : clamp((scrollY - metrics.top) / metrics.span);
-        const chapter =
-          reducedMotion || progress < 0.31 ? 0 : progress < 0.65 ? 1 : 2;
+        const chapter = reducedMotion
+          ? 0
+          : Math.min(4, Math.floor(progress * 5));
         showChapter(chapter, progress);
         if (chapterProgress) chapterProgress.style.width = `${progress * 100}%`;
         if (video && !reducedMotion && Number.isFinite(video.duration)) {

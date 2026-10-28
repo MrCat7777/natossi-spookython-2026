@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#080d15" />
     <meta
       name="description"
-      content="UMBRA. Explora Manta, simula la propagación de un brote y compara decisiones de contención en una experiencia geoespacial interactiva."
+      content="NATOSSI. Explora Manta, simula la propagación de un brote y compara decisiones de contención en una experiencia geoespacial interactiva."
     />
-    <title>UMBRA — El futuro se decide hoy.</title>
+    <title>Natossi — La ciudad no se rinde.</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="preload" href="./assets/manta-poster.webp" as="image" />
     <link rel="stylesheet" href="./styles.css" />
@@ -73,9 +73,9 @@
     </svg>
     <header class="site-header" id="site-header">
       <div class="container nav-shell">
-        <a class="brand" href="#inicio" aria-label="UMBRA, inicio"
+        <a class="brand" href="#inicio" aria-label="Natossi, inicio"
           ><img src="./favicon.svg" width="36" height="36" alt="" /><span
-            >umbra<span class="brand-period">.</span></span
+            >natossi<span class="brand-period">.</span></span
           ></a
         >
         <nav class="desktop-nav" aria-label="Navegación principal">
@@ -134,18 +134,21 @@
           <div class="intro-shade"></div>
           <div class="intro-noise" aria-hidden="true"></div>
           <div class="intro-grid" aria-hidden="true"></div>
+          <div class="cinematic-vignette" aria-hidden="true"></div>
+          <div class="ambient-embers" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="intro-orbit" aria-hidden="true"></div>
           <div class="container intro-content">
             <div class="intro-frame frame-first" id="intro-frame-0">
               <div class="eyebrow intro-enter">
-                <span class="live-dot"></span> INTELIGENCIA PARA LA CONTENCIÓN
+                <span class="live-dot"></span> HALLOWEEN PROTOCOL / MANTA 2026
               </div>
-              <h1 class="intro-enter">
-                El futuro se<br /><em>decide hoy.</em>
-              </h1>
+              <h1 class="intro-enter">La ciudad no<br /><em>se rinde.</em></h1>
               <p class="hero-description intro-enter">
-                Cada calle conecta una historia.<br />Cada decisión puede
-                cambiar miles.<br /><strong
-                  >Anticípate al siguiente movimiento.</strong
+                Una ciudad real. Una amenaza imposible.<br />Un futuro que
+                todavía puedes cambiar.<br /><strong
+                  >Bienvenido al protocolo Natossi.</strong
                 >
               </p>
               <div class="hero-actions intro-enter">
@@ -180,11 +183,11 @@
             </div>
             <div
               class="intro-frame frame-story"
-              id="intro-frame-2"
+              id="intro-frame-4"
               aria-hidden="true"
             >
               <div class="eyebrow">
-                <span class="live-dot green"></span> 02 / LA DECISIÓN
+                <span class="live-dot green"></span> 04 / TU DECISIÓN
               </div>
               <h2>El azar propaga.<br /><em>La estrategia protege.</em></h2>
               <p>
@@ -194,6 +197,40 @@
               <a class="button button-primary" href="#simulador"
                 >Cambia el desenlace <svg><use href="#i-arrow" /></svg
               ></a>
+            </div>
+            <div
+              class="intro-frame frame-story"
+              id="intro-frame-2"
+              aria-hidden="true"
+            >
+              <div class="eyebrow">
+                <span class="live-dot"></span> 02 / LA PROPAGACIÓN
+              </div>
+              <h2>La noche avanza.<br /><em>El brote también.</em></h2>
+              <p>
+                Cada contacto abre otro camino.<br />Esperar también es una
+                decisión.
+              </p>
+              <span class="story-footnote"
+                >Un escenario de ficción. Un modelo que puedes explicar.</span
+              >
+            </div>
+            <div
+              class="intro-frame frame-story"
+              id="intro-frame-3"
+              aria-hidden="true"
+            >
+              <div class="eyebrow">
+                <span class="live-dot green"></span> 03 / LA RESPUESTA
+              </div>
+              <h2>Recursos limitados.<br /><em>Impacto extraordinario.</em></h2>
+              <p>
+                Protege las conexiones clave.<br />Compara, ajusta y cambia el
+                desenlace.
+              </p>
+              <span class="story-footnote"
+                >Las mismas dosis. Una estrategia diferente.</span
+              >
             </div>
             <aside
               class="intro-telemetry"
@@ -208,7 +245,7 @@
               >
               <div class="telemetry-sub">
                 <span id="intro-telemetry-detail"
-                  >Cartografía OpenStreetMap</span
+                  >Imágenes satelitales de archivo</span
                 ><svg><use href="#i-location" /></svg>
               </div>
             </aside>
@@ -217,7 +254,7 @@
                 <span class="scroll-mouse"></span
                 ><span
                   >DESLIZA PARA DESCUBRIR<span
-                    >Una historia en tres movimientos</span
+                    >Cinco capítulos. Un futuro por cambiar.</span
                   ></span
                 >
               </div>
@@ -240,9 +277,22 @@
                 ><button
                   class="chapter-button"
                   data-chapter="2"
-                  aria-label="Ver capítulo 3, tu decisión"
+                  aria-label="Ver capítulo 3, la propagación"
                 >
-                  <span>03</span> Tu decisión
+                  <span>03</span> La amenaza
+                </button>
+                <button
+                  class="chapter-button"
+                  data-chapter="3"
+                  aria-label="Ver capítulo 4, la respuesta"
+                >
+                  <span>04</span> La respuesta</button
+                ><button
+                  class="chapter-button"
+                  data-chapter="4"
+                  aria-label="Ver capítulo 5, tu decisión"
+                >
+                  <span>05</span> Tu decisión
                 </button>
                 <div class="chapter-track">
                   <span id="chapter-progress"></span>
@@ -253,8 +303,10 @@
               ></a>
             </div>
           </div>
+          <span class="intro-edition">NATOSSI ORIGINAL / SPOOKYTHON ’26</span>
           <div class="video-credit">
-            SECUENCIA CARTOGRÁFICA · © OPENSTREETMAP CONTRIBUTORS
+            SECUENCIA SATELITAL · ESRI, VANTOR, EARTHSTAR GEOGRAPHICS, GIS USER
+            COMMUNITY · VÍAS © OPENSTREETMAP CONTRIBUTORS
           </div>
         </div>
       </section>
@@ -277,9 +329,9 @@
           ><span>UNA CIUDAD. MUCHAS FORMAS DE CONECTAR.</span>
         </div>
         <div class="section-heading reveal">
-          <h2>Más que un mapa.<br /><em>Una red de posibilidades.</em></h2>
+          <h2>Manta, desde arriba.<br /><em>Todo está conectado.</em></h2>
           <p>
-            La costa, las calles y los lugares de Manta.<br />Un escenario para
+            Imágenes satelitales reales de Manta.<br />Un escenario para
             entender cómo una decisión<br class="desktop-break" />
             local puede cambiar toda la historia.
           </p>
@@ -287,7 +339,7 @@
         <div class="territory-map-wrap reveal spotlight-card">
           <canvas
             id="territory-map"
-            aria-label="Mapa real de Manta con calles, costa y ubicaciones de referencia"
+            aria-label="Imagen satelital de Manta con calles y ubicaciones de referencia"
             role="img"
           ></canvas>
           <div class="map-title">
@@ -322,16 +374,23 @@
               >© OpenStreetMap contributors</a
             ></span
           >
+          <span class="satellite-source"
+            >Imágenes: Esri, Vantor, Earthstar Geographics, GIS User
+            Community</span
+          >
           <div id="map-error" class="map-error" hidden>
             No se pudo cargar el mapa. El simulador sigue disponible.
           </div>
         </div>
         <div class="territory-caption reveal">
-          <span><i class="legend-dot dot-blue"></i> CARTOGRAFÍA REAL</span>
+          <span
+            ><i class="legend-dot dot-blue"></i> IMÁGENES SATELITALES
+            REALES</span
+          >
           <p>
-            Las calles y los puntos de referencia provienen de OpenStreetMap. La
-            población y los contagios son sintéticos: no representan personas ni
-            casos reales.
+            Imágenes de archivo de Esri World Imagery; calles y referencias de
+            OpenStreetMap. Los personajes, contactos y contagios son sintéticos.
+            La imagen satelital no es una transmisión en vivo.
           </p>
         </div>
       </section>
@@ -416,6 +475,80 @@
         </div>
       </section>
 
+      <section id="amenaza" class="threat-section section-space">
+        <div class="container threat-layout">
+          <div class="threat-art reveal">
+            <div class="threat-halo" aria-hidden="true"></div>
+            <div class="threat-orbit" aria-hidden="true"></div>
+            <img
+              src="./assets/natossi-characters.webp"
+              alt="Ilustración de un superviviente y un zombie, personajes de la simulación"
+              width="1536"
+              height="1024"
+              loading="lazy"
+            />
+            <span class="threat-art-label"
+              ><i class="live-dot"></i> NATOSSI / ESCENARIO DE FICCIÓN</span
+            >
+            <div class="character-tag tag-human">
+              <span>01 / SUPERVIVIENTE</span
+              ><strong>Cada contacto cuenta.</strong>
+            </div>
+            <div class="character-tag tag-zombie">
+              <span>02 / AMENAZA</span><strong>Cada día cambia todo.</strong>
+            </div>
+          </div>
+          <div class="threat-copy reveal">
+            <div class="section-kicker">
+              <span>EL BROTE TIENE ROSTRO.</span>
+            </div>
+            <h2>Más que puntos.<br /><em>Historias en movimiento.</em></h2>
+            <p>
+              Personas que se encuentran. Un contagio que transforma cada
+              conexión. En Natossi, la propagación cobra vida para que entiendas
+              dónde y cuándo actuar.
+            </p>
+            <div
+              class="threat-state-selector"
+              role="group"
+              aria-label="Explora los estados del brote"
+            >
+              <button
+                type="button"
+                data-bio="0"
+                aria-pressed="true"
+                class="is-active"
+              >
+                <i class="legend-dot state-s"></i> Sano</button
+              ><button type="button" data-bio="1" aria-pressed="false">
+                <i class="legend-dot state-e"></i> Expuesto</button
+              ><button type="button" data-bio="2" aria-pressed="false">
+                <i class="legend-dot state-i"></i> Zombie</button
+              ><button type="button" data-bio="3" aria-pressed="false">
+                <i class="legend-dot state-r"></i> Inmune
+              </button>
+            </div>
+            <div class="bio-description">
+              <span id="bio-state-index">ESTADO 01 / SUSCEPTIBLE</span>
+              <p id="bio-state-description" aria-live="polite">
+                Todavía sano. Puede contagiarse al entrar en contacto con una
+                persona infecciosa. Protegerlo a tiempo puede interrumpir una
+                cadena.
+              </p>
+              <div class="bio-signal" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i
+                ><i></i><i></i><i></i>
+              </div>
+            </div>
+            <a class="inline-link" href="#simulador"
+              >Ver la simulación en vivo <svg><use href="#i-arrow" /></svg
+            ></a>
+            <span class="threat-note"
+              >Personajes ilustrativos. Población y contactos sintéticos.</span
+            >
+          </div>
+        </div>
+      </section>
       <section id="simulador" class="simulator-section section-space container">
         <div class="section-kicker reveal">
           <span>03 / EL LABORATORIO</span
@@ -601,8 +734,10 @@
           <div class="lab-main" id="results" aria-busy="true">
             <div class="lab-topline">
               <div>
-                <span class="chart-eyebrow">CENTRO DE CONTENCIÓN / MANTA</span>
-                <h3>Una ciudad. Tres futuros.</h3>
+                <span class="chart-eyebrow"
+                  >NATOSSI / CENTRO DE CONTENCIÓN</span
+                >
+                <h3>Personas. Decisiones. Consecuencias.</h3>
               </div>
               <span id="result-status" class="result-status"
                 ><i class="live-dot green"></i> Preparando</span
@@ -621,7 +756,7 @@
                 aria-controls="view-map"
                 data-view="map"
               >
-                <svg><use href="#i-location" /></svg> Mapa del brote</button
+                <svg><use href="#i-location" /></svg> Escena en vivo</button
               ><button
                 id="tab-chart"
                 type="button"
@@ -644,12 +779,12 @@
                 <canvas
                   id="outbreak-map"
                   role="img"
-                  aria-label="Evolución de agentes sintéticos sobre el mapa real de Manta"
+                  aria-label="Personas y zombies sintéticos animados sobre imágenes satelitales de Manta"
                 ></canvas>
                 <div class="map-state-legend">
                   <span><i class="legend-dot state-s"></i> Susceptible</span
                   ><span><i class="legend-dot state-e"></i> Expuesto</span
-                  ><span><i class="legend-dot state-i"></i> Infeccioso</span
+                  ><span><i class="legend-dot state-i"></i> Zombie</span
                   ><span><i class="legend-dot state-r"></i> Inmune</span>
                 </div>
                 <div class="map-day-stamp">
@@ -658,11 +793,35 @@
                 </div>
                 <div class="map-population-stamp">
                   <span id="map-infected-count">—</span
-                  ><small>infecciosos este día</small>
+                  ><small>zombies en la ciudad</small>
                 </div>
-                <span class="map-attribution"
-                  >© OpenStreetMap contributors · Agentes sintéticos</span
+                <span class="map-attribution satellite-attribution"
+                  >Imágenes: Esri, Vantor, Earthstar Geographics, GIS User
+                  Community<br />Vías: © OpenStreetMap contributors · Agentes
+                  sintéticos</span
                 >
+                <div class="scene-live-badge">
+                  <i class="live-dot green"></i> ESCENA ANIMADA
+                  <span>SIMULACIÓN</span>
+                </div>
+                <button
+                  type="button"
+                  id="scene-live-toggle"
+                  class="scene-live-toggle"
+                  aria-pressed="true"
+                  aria-label="Pausar movimiento de personajes"
+                >
+                  Pausar movimiento <span>Ⅱ</span>
+                </button>
+                <button
+                  type="button"
+                  id="scene-zoom-toggle"
+                  class="scene-zoom-toggle"
+                  aria-label="Acercar al foco del brote"
+                  title="Alternar vista completa y acercamiento al foco"
+                >
+                  Acercar al foco <span>1×</span>
+                </button>
               </div>
               <div class="playback-controls">
                 <button
@@ -828,7 +987,7 @@
             </p>
             <a
               class="inline-link"
-              href="https://github.com/MrCat7777/umbra-spookython-2026"
+              href="https://github.com/MrCat7777/natossi-spookython-2026"
               target="_blank"
               rel="noopener"
               >Explorar el código <svg><use href="#i-diagonal" /></svg
@@ -919,7 +1078,7 @@
     <footer class="site-footer container">
       <a class="brand" href="#inicio"
         ><img src="./favicon.svg" width="30" height="30" alt="" /><span
-          >umbra<span class="brand-period">.</span></span
+          >natossi<span class="brand-period">.</span></span
         ></a
       ><span>HECHO PARA PENSAR ANTES DE ACTUAR.</span>
       <div><span>MANTA, EC</span><span>SPOOKYTHON 2026 / TRACK B</span></div>

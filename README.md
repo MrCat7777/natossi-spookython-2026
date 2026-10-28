@@ -1,8 +1,8 @@
-# UMBRA
+# Natossi
 
-Una experiencia interactiva para el Track B «La plaga zombie» de Spookython 2026. UMBRA convierte un escenario de contención en Manta en una secuencia visual: recorre la ciudad, observa cómo se conecta un brote y compara decisiones con recursos limitados.
+Una experiencia interactiva para el Track B «La plaga zombie» de Spookython 2026. NATOSSI convierte un escenario de contención en Manta en una secuencia visual: recorre la ciudad, observa cómo se conecta un brote y compara decisiones con recursos limitados.
 
-La interfaz combina una introducción cartográfica ligada al scroll, un mapa local de Manta y un laboratorio de simulación reproducible. Es HTML, CSS y JavaScript estático; la demo no necesita un backend ni credenciales.
+La interfaz combina una introducción cartográfica ligada al scroll, un mapa satelital local de Manta y un laboratorio de simulación reproducible. Es HTML, CSS y JavaScript estático; la demo no necesita un backend ni credenciales.
 
 ## Ejecutar localmente
 
@@ -24,10 +24,10 @@ La suite incluye 12 pruebas de reproducibilidad, conservación de la población,
 
 ## Recorrido de la demo
 
-1. **Explorar Manta.** La introducción utiliza un vídeo cartográfico local de ocho segundos cuyo avance sigue el scroll. La cartografía base procede de OpenStreetMap y no requiere descargar teselas durante la presentación.
+1. **Explorar Manta.** La introducción utiliza un vídeo satelital local de 24 segundos y cinco capítulos, sobre un recorrido de 7,2 pantallas en escritorio y 6,2 en móvil. Las imágenes son de archivo de Esri World Imagery; las vías son de OpenStreetMap. No requiere descargar teselas durante la presentación.
 2. **Definir el escenario.** Cambia el punto inicial, contagio, dosis, casos iniciales, eficacia, día de respuesta y semilla. Elige 12, 32 o 64 réplicas, priorización por grado o una heurística de conexiones entre sectores, y una respuesta adaptativa opcional.
 3. **Comparar decisiones.** Ejecuta la estrategia, la vacunación aleatoria con el mismo presupuesto y la ausencia de intervención. Las curvas, la tabla y los rangos muestran resultados calculados.
-4. **Recorrer el brote.** Reproduce o selecciona un día y una estrategia sobre el mapa. Esta animación representa la primera réplica, mientras las curvas y métricas resumen todas las réplicas.
+4. **Recorrer el brote.** Reproduce o selecciona un día y una estrategia sobre el mapa. Puedes pausar las figuras y alternar vista completa y dos niveles de acercamiento al foco. Esta animación representa la primera réplica, mientras las curvas y métricas resumen todas las réplicas.
 5. **Probar un brote sorpresa.** Duplica el contagio, reduce a la mitad las dosis, mueve el inicio al transporte o establece una eficacia del 50 %. Los atajos modifican parámetros del mismo modelo.
 6. **Compartir el resultado.** Exporta el experimento como JSON o imprime un resumen con la configuración y la comparación.
 
@@ -36,6 +36,8 @@ La interfaz respeta `prefers-reduced-motion`: evita el scrubbing y la reproducci
 ## Geografía real, población sintética
 
 `dist/assets/manta-map.json` conserva geometría y referencias cartográficas de Manta obtenidas de OpenStreetMap. Las fuentes, la atribución y el tratamiento de los datos se describen en [docs/mapa-manta.md](docs/mapa-manta.md).
+
+Los personajes sombreados tienen un ciclo de marcha y un aspecto distinto por estado. La animación se limita a 30 fps, se pausa fuera de pantalla y al ocultar la pestaña, y respeta movimiento reducido. El movimiento es visual: no modifica los contactos ni el resultado epidemiológico.
 
 Las personas, sus contactos y sus ubicaciones superpuestas son **sintéticos**. No representan domicilios, desplazamientos, pacientes ni registros sanitarios reales. La cartografía da contexto geográfico a la demo; no calibra el modelo epidemiológico.
 
@@ -89,6 +91,10 @@ umbra/
 
 El motor se ejecuta en el navegador y no envía la configuración a un servicio remoto. La demo no guarda resultados en un servidor. El archivo JSON se descarga en el dispositivo y el informe usa la impresión del navegador.
 
+## Publicación
+
+La versión pública está en [Natossi](https://mrcat7777.github.io/natossi-spookython-2026/). El workflow `.github/workflows/pages.yml` ejecuta las pruebas del modelo y publica `dist/` en GitHub Pages al actualizar `main`.
+
 ## Despliegue en AWS
 
 La propuesta es un bucket S3 privado servido mediante CloudFront y Origin Access Control (OAC), descrita en [docs/arquitectura.md](docs/arquitectura.md). Publica el contenido de `dist/` en la raíz del bucket, configura `index.html` como documento raíz de CloudFront y conserva las rutas de los recursos. Verifica los tipos MIME de JavaScript, JSON y MP4 y la reproducción del vídeo desde la distribución HTTPS.
@@ -111,7 +117,7 @@ El vídeo debe incluirse en el cálculo de transferencia. Registra cantidades y 
 
 ## Desarrollo
 
-El repositorio principal es [MrCat7777/umbra-spookython-2026](https://github.com/MrCat7777/umbra-spookython-2026). Para trabajar en un cambio:
+El repositorio principal es [MrCat7777/natossi-spookython-2026](https://github.com/MrCat7777/natossi-spookython-2026). Para trabajar en un cambio:
 
 ```bash
 git pull --ff-only

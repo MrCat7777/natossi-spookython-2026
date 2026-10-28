@@ -1,6 +1,6 @@
-# Arquitectura de UMBRA
+# Arquitectura de Natossi
 
-UMBRA es un sitio estático. La introducción cartográfica, el mapa y el motor de simulación se ejecutan en el navegador. La demo actual no necesita una API, Lambda, una base de datos ni credenciales de AWS en el cliente.
+NATOSSI es un sitio estático. La introducción cartográfica, el mapa y el motor de simulación se ejecutan en el navegador. La demo actual no necesita una API, Lambda, una base de datos ni credenciales de AWS en el cliente.
 
 ## Arquitectura propuesta para AWS
 
@@ -28,9 +28,9 @@ Configura `index.html` como documento raíz y redirige HTTP a HTTPS. La navegaci
 
 ## Introducción y mapa
 
-El vídeo cartográfico local de ocho segundos avanza según la posición de scroll durante la introducción. La geografía procede del mismo recurso local de Manta que usa la interfaz, sin dependencia de un servidor de teselas durante la demo. Los datos y su atribución se documentan en [mapa-manta.md](mapa-manta.md).
+El vídeo satelital local de 24 segundos, organizado en cinco capítulos, avanza según la posición de scroll durante la introducción. La geografía procede del mismo recurso local de Manta que usa la interfaz, sin dependencia de un servidor de teselas durante la demo. Los datos y su atribución se documentan en [mapa-manta.md](mapa-manta.md).
 
-La cartografía es real; las personas y contactos superpuestos son sintéticos. Las posiciones de los agentes son ilustrativas y no describen domicilios ni movilidad de personas reales. Al solicitar movimiento reducido, la introducción presenta un estado estático y evita el scrubbing y la reproducción automática.
+Las imágenes de archivo proceden de Esri World Imagery y las vías de OpenStreetMap. La cartografía es real; las personas y contactos superpuestos son sintéticos. Las posiciones de los agentes son ilustrativas y no describen domicilios ni movilidad de personas reales. Al solicitar movimiento reducido, la introducción presenta un estado estático y evita el scrubbing y la reproducción automática.
 
 ## Flujo de simulación
 
@@ -50,3 +50,9 @@ El hosting estático reduce los componentes operativos de la presentación. La r
 El modelo conserva una población fija de 240 agentes durante 30 días y permite 12, 32 o 64 réplicas desde la interfaz. Las heurísticas son explicables, pero no garantizan la mejor decisión para todos los escenarios. La exposición dura dos días y la infección cuatro; la inmunidad adquirida se conserva durante el horizonte simulado. No hay calibración epidemiológica ni datos sanitarios reales.
 
 Esta arquitectura es una propuesta. El despliegue AWS sigue pendiente y debe acreditarse con URL operativa, región, captura del Budget con alerta y gasto real de la cuenta después de crear y verificar los recursos.
+
+## Publicación de la demo
+
+El workflow de GitHub Pages publica el contenido estático de `dist/` después de comprobar el motor y la sintaxis de los módulos. Es una publicación de presentación independiente del despliegue AWS solicitado en las bases.
+
+Las figuras sombreadas del mapa usan un atlas de sprites generado por canvas. Un bucle limitado a 30 fps se ejecuta sólo si el mapa está visible, la pestaña está activa y se permite el movimiento. El usuario puede pausarlo o acercarse al foco sin cambiar los estados del modelo.

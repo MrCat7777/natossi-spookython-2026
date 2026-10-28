@@ -1,5 +1,5 @@
 /**
- * UMBRA — illustrative, synthetic SEIR experiment. No real Manta data.
+ * NATOSSI — illustrative, synthetic SEIR experiment. No real Manta data.
  *
  * A person has household contacts (groups of five), one of four social hubs,
  * and occasional contacts between groups. The four hub people are connected.

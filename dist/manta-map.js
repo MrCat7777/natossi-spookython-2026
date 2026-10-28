@@ -44,7 +44,8 @@ function roundedRect(context, x, y, width, height, radius = 3) {
 /**
  * Offline cartography drawn from OpenStreetMap geometries.
  * Geographic roads and coastline are real; agent positions are illustrative.
- * Rendering is event-driven: only state changes and resizes schedule a frame.
+ * Satellite imagery is photographic; people and their movement are synthetic.
+ * Live rendering runs only while the outbreak canvas is visible and motion is allowed.
  */
 export class MantaMap {
   constructor(canvas, data, { interactive = false, labels = true } = {}) {
@@ -56,12 +57,22 @@ export class MantaMap {
     this.interactive = interactive;
     this.labels = labels;
     this.focus = "mercado";
+    this.zoom = 1;
     this.isOutbreak = canvas.id === "outbreak-map";
     this.result = null;
     this.day = 0;
     this.strategy = "strategic";
     this.destroyed = false;
     this.pendingFrame = null;
+    this.liveFrame = null;
+    this.liveEnabled = true;
+    this.visible = false;
+    this.lastLivePaint = 0;
+    this.animationTime = 0;
+    this.avatarCache = new Map();
+    this.motionPreference = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    );
     this.width = 0;
     this.height = 0;
     this.base = document.createElement("canvas");
@@ -71,6 +82,30 @@ export class MantaMap {
     this.positions = [];
     this.resize = this.resize.bind(this);
     this.scheduleDraw = this.scheduleDraw.bind(this);
+    this.updateLive = this.updateLive.bind(this);
+    this.paintLive = this.paintLive.bind(this);
+    this.satellite = new Image();
+    this.satellite.decoding = "async";
+    this.satellite.onload = () => {
+      if (this.destroyed) return;
+      this.drawBase();
+      this.scheduleDraw();
+    };
+    this.satellite.src = "./assets/manta-satellite.webp";
+    this.motionPreference.addEventListener("change", this.updateLive);
+    document.addEventListener("visibilitychange", this.updateLive);
+    if ("IntersectionObserver" in window) {
+      this.visibilityObserver = new IntersectionObserver(
+        (entries) => {
+          this.visible = entries.some(
+            (entry) => entry.isIntersecting && entry.intersectionRatio >= 0.1,
+          );
+          this.updateLive();
+        },
+        { threshold: [0, 0.1] },
+      );
+      this.visibilityObserver.observe(canvas);
+    } else this.visible = true;
     if ("ResizeObserver" in window) {
       this.resizeObserver = new ResizeObserver(this.resize);
       this.resizeObserver.observe(canvas);
@@ -84,6 +119,10 @@ export class MantaMap {
   setFocus(placeId) {
     const normalized = PLACE_ALIASES[placeId] || placeId;
     if (this.places.has(normalized)) this.focus = normalized;
+    if (this.width && this.height) {
+      this.configureProjection();
+      this.drawBase();
+    }
     this.scheduleDraw();
   }
 
@@ -94,8 +133,64 @@ export class MantaMap {
     this.strategy = "strategic";
     this.focus = PLACE_ALIASES[result?.origin] || result?.origin || this.focus;
     this.buildAgentPositions();
+    if (this.width && this.height) this.configureProjection();
     this.drawBase();
     this.scheduleDraw();
+    this.updateLive();
+  }
+
+  setLive(enabled) {
+    this.liveEnabled = Boolean(enabled);
+    this.updateLive();
+    this.scheduleDraw();
+  }
+
+  setZoom(level) {
+    const requested = Number(level);
+    this.zoom = Number.isFinite(requested)
+      ? Math.max(1, Math.min(3, Math.round(requested)))
+      : 1;
+    if (this.width && this.height) {
+      this.configureProjection();
+      this.drawBase();
+    }
+    this.scheduleDraw();
+    return this.zoom;
+  }
+
+  updateLive() {
+    const active =
+      !this.destroyed &&
+      this.isOutbreak &&
+      this.result &&
+      this.visible &&
+      this.liveEnabled &&
+      !document.hidden &&
+      !this.motionPreference.matches;
+    if (active && this.liveFrame === null)
+      this.liveFrame = requestAnimationFrame(this.paintLive);
+    else if (!active && this.liveFrame !== null) {
+      cancelAnimationFrame(this.liveFrame);
+      this.liveFrame = null;
+    }
+  }
+
+  paintLive(timestamp) {
+    this.liveFrame = null;
+    if (
+      this.destroyed ||
+      !this.visible ||
+      !this.liveEnabled ||
+      document.hidden ||
+      this.motionPreference.matches
+    )
+      return;
+    if (timestamp - this.lastLivePaint >= 1000 / 30) {
+      this.lastLivePaint = timestamp;
+      this.animationTime = timestamp / 1000;
+      this.draw();
+    }
+    this.updateLive();
   }
 
   setDay(day, strategy = "strategic") {
@@ -153,6 +248,16 @@ export class MantaMap {
     this.offsetY =
       this.height / 2 +
       (!this.isOutbreak && this.width < 600 ? -this.height * 0.09 : 0);
+    if (this.zoom > 1) {
+      const focus = this.places.get(this.focus);
+      if (focus) {
+        this.centerLongitude = focus.lon;
+        this.centerLatitude = focus.lat;
+      }
+      this.scale *= this.zoom === 2 ? 1.8 : 2.8;
+      this.offsetX = this.width / 2;
+      this.offsetY = this.height / 2;
+    }
   }
 
   project(point) {
@@ -209,6 +314,30 @@ export class MantaMap {
     ctx.fillStyle = ground;
     ctx.fill();
 
+    if (this.satellite.complete && this.satellite.naturalWidth) {
+      const [west, south, east, north] = this.data.bounds;
+      const northwest = this.project([west, north]);
+      const southeast = this.project([east, south]);
+      ctx.save();
+      ctx.filter = "saturate(.76) contrast(1.12) brightness(.88)";
+      ctx.drawImage(
+        this.satellite,
+        northwest[0],
+        northwest[1],
+        southeast[0] - northwest[0],
+        southeast[1] - northwest[1],
+      );
+      ctx.filter = "none";
+      ctx.fillStyle = "rgba(8,20,32,.20)";
+      ctx.fillRect(
+        northwest[0],
+        northwest[1],
+        southeast[0] - northwest[0],
+        southeast[1] - northwest[1],
+      );
+      ctx.restore();
+    }
+
     const roadGroups = new Map();
     for (const road of this.data.roads) {
       const type = road.type.replace(/_link$/, "");
@@ -216,12 +345,12 @@ export class MantaMap {
       roadGroups.get(type).push(road);
     }
     const colors = {
-      residential: "rgba(109,139,164,.17)",
-      tertiary: "rgba(129,160,183,.28)",
-      secondary: "rgba(151,176,195,.35)",
-      primary: "rgba(171,192,209,.43)",
-      trunk: "rgba(148,177,199,.43)",
-      motorway: "rgba(148,177,199,.43)",
+      residential: "rgba(180,205,220,.07)",
+      tertiary: "rgba(185,212,229,.12)",
+      secondary: "rgba(195,220,235,.18)",
+      primary: "rgba(210,232,245,.24)",
+      trunk: "rgba(195,220,238,.24)",
+      motorway: "rgba(195,220,238,.24)",
     };
     for (const [type, roads] of roadGroups) {
       ctx.beginPath();
@@ -310,12 +439,168 @@ export class MantaMap {
     });
   }
 
+  avatarStamp(state, style, frame) {
+    const key = `${state}:${style}:${frame}`;
+    if (this.avatarCache.has(key)) return this.avatarCache.get(key);
+    const stamp = document.createElement("canvas");
+    stamp.width = 64;
+    stamp.height = 80;
+    const ctx = stamp.getContext("2d");
+    ctx.scale(2, 2);
+    ctx.translate(16, 32);
+    const zombie = state === 2;
+    const phase = (frame / 8) * Math.PI * 2;
+    const stride = Math.sin(phase) * (zombie ? 2 : 2.5);
+    const bodyTilt = zombie ? 1.4 : 0;
+    const clothes = zombie
+      ? ["#637b54", "#735f4b", "#5b6d5f", "#6e6554"][style]
+      : state === 1
+        ? ["#b89a67", "#a89475", "#c6a36c", "#8b856b"][style]
+        : ["#617a96", "#9c8c7c", "#7e7790", "#778e85"][style];
+    const skin = zombie
+      ? "#a0aa78"
+      : ["#d2a486", "#bc8b6d", "#e0b99d", "#b88f74"][style];
+    // Elliptical ground shadow and oblique, shaded body give small agents a
+    // readable human shape without pretending to be observed satellite people.
+    ctx.fillStyle = "rgba(0,0,0,.52)";
+    ctx.beginPath();
+    ctx.ellipse(1.5, 1, 5.2, 1.9, -0.12, 0, Math.PI * 2);
+    ctx.fill();
+    if (state === 3) {
+      ctx.strokeStyle = "rgba(126,225,188,.7)";
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.ellipse(0, 0.3, 6.6, 2.3, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    // Legs separate as the gait changes, with dark shoes anchoring each foot.
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = zombie ? "#38413a" : "#29384a";
+    ctx.lineWidth = 2.3;
+    ctx.beginPath();
+    ctx.moveTo(-1.7, -8);
+    ctx.lineTo(-2.4 - stride * 0.45, -3.5);
+    ctx.lineTo(-2.2 + stride * 0.65, 0);
+    ctx.moveTo(1.4, -8);
+    ctx.lineTo(2 + stride * 0.45, -3.5);
+    ctx.lineTo(2 - stride * 0.65, 0);
+    ctx.stroke();
+    ctx.strokeStyle = "#111e2a";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(-2.4 + stride * 0.65, 0);
+    ctx.lineTo(-0.5 + stride * 0.65, 0.3);
+    ctx.moveTo(1.8 - stride * 0.65, 0);
+    ctx.lineTo(3.6 - stride * 0.65, 0.3);
+    ctx.stroke();
+    // The far arm is partly hidden by the torso. Zombies reach forward.
+    ctx.strokeStyle = clothes;
+    ctx.lineWidth = 2.1;
+    ctx.beginPath();
+    ctx.moveTo(-2.7 + bodyTilt, -15.5);
+    ctx.lineTo(zombie ? 1 : -4.1, -11.5 + (zombie ? -0.5 : stride * 0.5));
+    ctx.lineTo(zombie ? 5 : -3.5, -10 + (zombie ? -3 : stride));
+    ctx.stroke();
+    ctx.strokeStyle = skin;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(zombie ? 5 : -3.5, -10 + (zombie ? -3 : stride));
+    ctx.lineTo(zombie ? 7 : -3, -9 + (zombie ? -4 : stride));
+    ctx.stroke();
+    const torso = ctx.createLinearGradient(-4, -18, 4, -9);
+    torso.addColorStop(0, clothes);
+    torso.addColorStop(1, zombie ? "#414b3b" : "#405267");
+    ctx.fillStyle = torso;
+    ctx.beginPath();
+    ctx.moveTo(-2.5 + bodyTilt, -17);
+    ctx.quadraticCurveTo(0 + bodyTilt, -19, 2.8 + bodyTilt, -16.5);
+    ctx.lineTo(2, -8.2);
+    ctx.quadraticCurveTo(0, -6.8, -2.4, -8.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.15)";
+    ctx.beginPath();
+    ctx.moveTo(-2 + bodyTilt, -16);
+    ctx.lineTo(-0.8 + bodyTilt, -16.8);
+    ctx.lineTo(-0.5, -9.5);
+    ctx.lineTo(-1.9, -10);
+    ctx.fill();
+    // Near arm swings in the opposite direction to the near leg.
+    ctx.strokeStyle = clothes;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(2.6 + bodyTilt, -16);
+    ctx.lineTo(zombie ? 5.3 : 4.1, -12.4 + (zombie ? -1.4 : -stride * 0.5));
+    ctx.lineTo(zombie ? 8 : 3.9, -10.5 + (zombie ? -4 : -stride));
+    ctx.stroke();
+    ctx.strokeStyle = skin;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(zombie ? 8 : 3.9, -10.5 + (zombie ? -4 : -stride));
+    ctx.lineTo(zombie ? 10 : 3.8, -9.2 + (zombie ? -5 : -stride));
+    ctx.stroke();
+    // Neck, head, hair and one light edge keep faces dimensional at small scale.
+    ctx.fillStyle = skin;
+    ctx.fillRect(-0.8 + bodyTilt, -20.2, 2.1, 3);
+    ctx.beginPath();
+    ctx.ellipse(
+      0.1 + bodyTilt,
+      -22,
+      2.7,
+      3.3,
+      zombie ? 0.13 : -0.08,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+    ctx.fillStyle = zombie
+      ? "#4a5140"
+      : ["#2e2726", "#392c24", "#49382e", "#242626"][style];
+    ctx.beginPath();
+    ctx.ellipse(-0.25 + bodyTilt, -23.2, 2.65, 2, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,238,207,.45)";
+    ctx.beginPath();
+    ctx.ellipse(1.2 + bodyTilt, -22, 0.7, 1.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (zombie) {
+      ctx.fillStyle = "#edb36c";
+      ctx.fillRect(1.5 + bodyTilt, -22.4, 0.8, 0.65);
+      ctx.fillStyle = "#374735";
+      ctx.fillRect(-1, -11, 1.3, 2.7);
+    }
+    if (state === 1) {
+      ctx.fillStyle = "#ffc578";
+      ctx.beginPath();
+      ctx.arc(0, -28.4, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    this.avatarCache.set(key, stamp);
+    return stamp;
+  }
+
   drawAgents() {
     const ctx = this.context;
     const timeline = this.result?.timeline?.[this.strategy];
     const states = timeline?.[Math.min(this.day, (timeline?.length || 1) - 1)];
     if (!states || !this.positions.length) return;
-    const projected = this.positions.map((position) => this.project(position));
+    const motionAllowed = !this.motionPreference.matches;
+    const time = motionAllowed ? this.animationTime : 0;
+    const projected = this.positions.map((position, index) => {
+      const [x, y] = this.project(position);
+      const phase = randomAt(this.result.seed, index, 32) * Math.PI * 2;
+      // Sub-pixel walking and household separation are visual only. Contact
+      // edges and epidemiological states remain fixed by the seeded model.
+      const separation =
+        index < 4 ? 0 : 3 + randomAt(this.result.seed, index, 33) * 5;
+      return [
+        x + Math.cos(phase) * separation + Math.sin(time * 0.35 + phase) * 1.2,
+        y +
+          Math.sin(phase) * separation * 0.6 +
+          Math.cos(time * 0.3 + phase) * 0.6,
+      ];
+    });
     const edges = this.result.network.edges || [];
     ctx.save();
     ctx.lineWidth = 0.55;
@@ -341,20 +626,56 @@ export class MantaMap {
     });
     ctx.strokeStyle = "rgba(255,146,84,.15)";
     ctx.stroke();
-    // Draw infectious agents last so their glow remains visible in dense groups.
-    for (const state of [0, 3, 1, 2]) {
-      states.forEach((value, index) => {
-        if (value !== state || !projected[index]) return;
-        const [x, y] = projected[index];
-        const radius = state === 2 ? 2.5 : state === 1 ? 2.1 : 1.8;
-        ctx.fillStyle = STATE_COLORS[state];
-        ctx.globalAlpha = state === 0 ? 0.7 : 0.98;
-        ctx.shadowColor = state === 2 ? STATE_COLORS[state] : "transparent";
-        ctx.shadowBlur = state === 2 ? 9 : 0;
-        ctx.beginPath();
-        ctx.arc(x, y, index < 4 ? radius + 1.4 : radius, 0, Math.PI * 2);
-        ctx.fill();
-      });
+    // Depth sort preserves the silhouettes in small crowds; no live state is
+    // invented by the renderer. Every figure is one synthetic model agent.
+    const order = projected
+      .map((point, index) => ({ point, index }))
+      .sort((a, b) => a.point[1] - b.point[1]);
+    for (const {
+      point: [x, y],
+      index,
+    } of order) {
+      if (x < -20 || y < -20 || x > this.width + 20 || y > this.height + 30)
+        continue;
+      const state = states[index];
+      const style = index % 4;
+      const phase = randomAt(this.result.seed, index, 40);
+      const frame = motionAllowed
+        ? Math.floor((time * (state === 2 ? 3.2 : 5.2) + phase * 8) % 8)
+        : 0;
+      if (state === 2 || state === 1) {
+        const pulse = 0.7 + Math.sin(time * 2 + phase * 8) * 0.17;
+        const glow = ctx.createRadialGradient(
+          x,
+          y - 5,
+          1,
+          x,
+          y - 5,
+          state === 2 ? 15 : 9,
+        );
+        glow.addColorStop(
+          0,
+          `rgba(${state === 2 ? "255,135,69" : "255,205,120"},${0.22 * pulse})`,
+        );
+        glow.addColorStop(1, "rgba(255,146,84,0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(x - 16, y - 21, 32, 32);
+      }
+      const personScale =
+        (index < 4 ? 1.06 : this.width < 500 ? 0.79 : 0.87) *
+        (1 + 0.2 * (this.zoom - 1));
+      const stamp = this.avatarStamp(state, style, frame);
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(
+        randomAt(this.result.seed, index, 42) > 0.5
+          ? personScale
+          : -personScale,
+        personScale,
+      );
+      ctx.globalAlpha = state === 0 ? 0.9 : 1;
+      ctx.drawImage(stamp, -12.8, -25.6, 25.6, 32);
+      ctx.restore();
     }
     ctx.restore();
   }
@@ -457,20 +778,31 @@ export class MantaMap {
     if (this.destroyed || this.pendingFrame !== null) return;
     this.pendingFrame = requestAnimationFrame(() => {
       this.pendingFrame = null;
-      if (this.destroyed || !this.width) return;
-      const ctx = this.context;
-      ctx.clearRect(0, 0, this.width, this.height);
-      ctx.drawImage(this.base, 0, 0, this.width, this.height);
-      if (this.result) this.drawAgents();
-      this.drawLabels();
+      this.draw();
     });
+  }
+
+  draw() {
+    if (this.destroyed || !this.width) return;
+    const ctx = this.context;
+    ctx.clearRect(0, 0, this.width, this.height);
+    ctx.drawImage(this.base, 0, 0, this.width, this.height);
+    if (this.result) this.drawAgents();
+    this.drawLabels();
   }
 
   destroy() {
     this.destroyed = true;
     this.resizeObserver?.disconnect();
+    this.visibilityObserver?.disconnect();
     window.removeEventListener("resize", this.resize);
+    this.motionPreference.removeEventListener("change", this.updateLive);
+    document.removeEventListener("visibilitychange", this.updateLive);
     if (this.pendingFrame !== null) cancelAnimationFrame(this.pendingFrame);
+    if (this.liveFrame !== null) cancelAnimationFrame(this.liveFrame);
     this.pendingFrame = null;
+    this.liveFrame = null;
+    this.satellite.onload = null;
+    this.avatarCache.clear();
   }
 }

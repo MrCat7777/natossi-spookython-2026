@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    -80.78499999999998,
+    -1.0049999999999997,
+    -80.67499999999998,
+    -0.9149999999999998
+  ],
+  "imageSR": {
+    "wkid": 4326,
+    "latestWkid": 4326
+  },
+  "width": 2200,
+  "height": 1800,
+  "source": "Esri World Imagery",
+  "attribution": "Esri, Vantor, Earthstar Geographics, and the GIS User Community",
+  "sourceUrl": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer",
+  "exportUrl": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=-80.785%2C-1.005%2C-80.675%2C-0.915&bboxSR=4326&imageSR=4326&size=2200%2C1800&format=jpg&transparent=false&f=pjson",
+  "termsUrl": "https://goto.arcgisonline.com/maps/World_Imagery",
+  "description": "Imagen satelital real de archivo. No es una captura en vivo; los agentes y contagios superpuestos son sintéticos."
+}
