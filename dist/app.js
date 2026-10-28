@@ -1,6 +1,6 @@
 import { runComparison } from "./simulation.js";
-import { MantaMap } from "./manta-map.js?v=motion-2";
-import { initMotion } from "./motion.js?v=motion-2";
+import { MantaMap } from "./manta-map.js?v=immersive-3";
+import { initMotion } from "./motion.js?v=immersive-3";
 import { SimulationClock } from "./playback.js";
 
 const $ = (selector) => document.querySelector(selector);
@@ -93,6 +93,7 @@ function syncRanges(markPending = true) {
     }
   }
   if (markPending && latestResult) {
+    setPipelinePhase("configure");
     $("#pending-state").textContent = "Hay cambios pendientes de ejecutar.";
     setStatus("Configuración modificada", true);
   }
@@ -396,6 +397,7 @@ document.addEventListener("visibilitychange", () => {
 async function executeSimulation({ animatePlayback = false } = {}) {
   if (running || !form.reportValidity()) return;
   running = true;
+  setPipelinePhase("simulate");
   stopPlayback();
   const results = $("#results"),
     button = $("#run-button");
@@ -429,6 +431,7 @@ async function executeSimulation({ animatePlayback = false } = {}) {
     setDay(0);
     $("#pending-state").textContent = "";
     setStatus("Simulación completa");
+    setPipelinePhase("analyze");
     $("#simulation-announcement").textContent =
       `Simulación completada. Semilla ${result.seed}, ${result.runs} réplicas: ${number.format(result.saved)} contagios evitados y ${number.format(result.reduction)} por ciento de reducción frente a no intervenir.`;
     $("#download-results").disabled = false;
@@ -438,6 +441,7 @@ async function executeSimulation({ animatePlayback = false } = {}) {
       startPlayback();
     }
   } catch (error) {
+    setPipelinePhase("configure");
     setStatus("Revisa la configuración", true);
     $("#pending-state").textContent =
       "No se pudo ejecutar. Revisa los parámetros.";
@@ -703,14 +707,31 @@ $("#scene-live-toggle").addEventListener("click", () => {
   syncSceneLive();
 });
 syncSceneLive();
+$("#scene-perspective-toggle").addEventListener("click", () => {
+  const button = $("#scene-perspective-toggle");
+  const active = button.getAttribute("aria-pressed") !== "true";
+  button.setAttribute("aria-pressed", String(active));
+  button.innerHTML = `${active ? "Vista cenital" : "Vista 3D"} <span>${active ? "⌖" : "◇"}</span>`;
+  $(".simulation-map").classList.toggle("is-perspective", active);
+});
+function setPipelinePhase(phase) {
+  const phases = ["configure", "simulate", "analyze"];
+  const activeIndex = phases.indexOf(phase);
+  document.querySelectorAll("[data-phase]").forEach((element) => {
+    const index = phases.indexOf(element.dataset.phase);
+    element.classList.toggle("is-active", index === activeIndex);
+    element.classList.toggle("is-complete", index < activeIndex);
+  });
+  $(".simulation-pipeline").dataset.current = phase;
+}
 $("#scene-zoom-toggle").addEventListener("click", () => {
   sceneZoom = sceneZoom === 3 ? 1 : sceneZoom + 1;
   outbreakMap?.setZoom(sceneZoom);
   if (!reducedMotion.matches)
     $("#outbreak-map").animate(
       [
-        { opacity: 0.4, transform: "scale(1.035)", filter: "blur(3px)" },
-        { opacity: 1, transform: "scale(1)", filter: "blur(0px)" },
+        { opacity: 0.4, filter: "blur(3px)" },
+        { opacity: 1, filter: "blur(0px)" },
       ],
       { duration: 700, easing: "cubic-bezier(.16,1,.3,1)" },
     );

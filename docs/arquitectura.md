@@ -61,4 +61,4 @@ Las figuras sombreadas del mapa usan un atlas de sprites generado por canvas. Un
 
 `playback.js` mantiene un reloj de presentación continuo con `requestAnimationFrame`. El día entero selecciona el estado de la réplica; la fracción controla el progreso visual. Pausar o salir de pantalla conserva la posición, y un fotograma retrasado no hace saltar varios días.
 
-La entrega audiovisual sirve 1080p60 en escritorio y 720p60 en móvil. La cadencia de 60 fps usa interpolación de la secuencia original de 24 fps y escalado Lanczos; no equivale a una nueva captura de satélite. Los MP4 conservan keyframes frecuentes y metadatos al inicio para buscar posiciones al hacer scroll.
+La entrega audiovisual sirve 1080p60 en escritorio y 720p60 en móvil. La secuencia se renderiza en Full HD nativo desde una imagen satelital de 4096 × 3352. La cadencia de 60 fps usa interpolación de los 24 fps originales; no equivale a una nueva captura de satélite. Los MP4 conservan keyframes frecuentes y metadatos al inicio para buscar posiciones al hacer scroll.

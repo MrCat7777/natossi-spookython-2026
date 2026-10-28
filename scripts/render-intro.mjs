@@ -32,8 +32,8 @@ const satelliteMetadata = JSON.parse(
 const satellite = await loadImage(
   path.join(directory, "dist/assets/manta-satellite.webp"),
 );
-const WIDTH = 1600,
-  HEIGHT = 900,
+const WIDTH = 1920,
+  HEIGHT = 1080,
   FPS = 24,
   SECONDS = 24,
   FRAMES = FPS * SECONDS;
@@ -61,8 +61,8 @@ function project(point, progress) {
   const zoomIn = smooth(progress / 0.52);
   const settle = smooth((progress - 0.78) / 0.22);
   const rotation = -0.16 + progress * 0.21;
-  const x = (point[0] - centerLon) * 15500;
-  const y = (centerLat - point[1]) * 15500;
+  const x = (point[0] - centerLon) * 18600;
+  const y = (centerLat - point[1]) * 18600;
   const rx = x * Math.cos(rotation) - y * Math.sin(rotation);
   const ry = x * Math.sin(rotation) + y * Math.cos(rotation);
   const zoom = 0.98 + zoomIn * 0.38 - settle * 0.12;
@@ -104,8 +104,8 @@ function glow(x, y, r, color, opacity = 0.6) {
 // Perspective is applied to an equirectangular geographic mesh. Each source
 // triangle is mapped by its exact lon/lat corners; imagery and OSM stay aligned.
 const mesh = [];
-const COLUMNS = 6,
-  ROWS = 5;
+const COLUMNS = 4,
+  ROWS = 3;
 for (let row = 0; row < ROWS; row++)
   for (let col = 0; col < COLUMNS; col++) {
     const u0 = col / COLUMNS,
@@ -305,11 +305,11 @@ const ffmpeg = spawn(
     "-preset",
     "fast",
     "-crf",
-    "30",
+    "25",
     "-maxrate",
-    "4200k",
+    "8000k",
     "-bufsize",
-    "4200k",
+    "16000k",
     "-g",
     "1",
     "-keyint_min",

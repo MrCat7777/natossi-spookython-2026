@@ -10,9 +10,13 @@
     />
     <title>Natossi — La ciudad no se rinde.</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <link rel="preload" href="./assets/manta-poster.webp" as="image" />
-    <link rel="stylesheet" href="./styles.css?v=motion-2" />
-    <script type="module" src="./app.js?v=motion-2"></script>
+    <link
+      rel="preload"
+      href="./assets/manta-poster.webp?v=detail-3"
+      as="image"
+    />
+    <link rel="stylesheet" href="./styles.css?v=immersive-3" />
+    <script type="module" src="./app.js?v=immersive-3"></script>
   </head>
   <body>
     <a class="skip-link" href="#simulador">Saltar al simulador</a>
@@ -126,15 +130,18 @@
             muted
             playsinline
             preload="auto"
-            poster="./assets/manta-poster.webp"
+            poster="./assets/manta-poster.webp?v=detail-3"
             aria-hidden="true"
           >
             <source
-              src="./assets/manta-intro-hd.mp4"
+              src="./assets/manta-intro-hd.mp4?v=detail-3"
               type="video/mp4"
               media="(min-width: 1000px)"
             />
-            <source src="./assets/manta-intro.mp4?v=hd60" type="video/mp4" />
+            <source
+              src="./assets/manta-intro.mp4?v=detail-3"
+              type="video/mp4"
+            />
           </video>
           <div class="intro-shade"></div>
           <div class="intro-noise" aria-hidden="true"></div>
@@ -737,12 +744,18 @@
             ></span>
           </form>
           <div class="lab-main" id="results" aria-busy="true">
+            <div class="simulation-pipeline" aria-label="Proceso del escenario">
+              <span class="is-active" data-phase="configure"
+                ><i>01</i> Configura</span
+              ><b></b><span data-phase="simulate"><i>02</i> Simula</span><b></b
+              ><span data-phase="analyze"><i>03</i> Descubre</span>
+            </div>
             <div class="lab-topline">
               <div>
                 <span class="chart-eyebrow"
                   >NATOSSI / CENTRO DE CONTENCIÓN</span
                 >
-                <h3>Personas. Decisiones. Consecuencias.</h3>
+                <h3>Tu ciudad. En movimiento.</h3>
               </div>
               <span id="result-status" class="result-status"
                 ><i class="live-dot green"></i> Preparando</span
@@ -780,7 +793,7 @@
               role="tabpanel"
               aria-labelledby="tab-map"
             >
-              <div class="simulation-map">
+              <div class="simulation-map is-perspective">
                 <div class="day-transition-flash" aria-hidden="true"></div>
                 <div class="tactical-scan" aria-hidden="true"></div>
                 <canvas
@@ -815,6 +828,14 @@
                   <i class="live-dot green"></i> ESCENA ANIMADA
                   <span>SIMULACIÓN</span>
                 </div>
+                <button
+                  type="button"
+                  id="scene-perspective-toggle"
+                  class="scene-perspective-toggle"
+                  aria-pressed="true"
+                >
+                  Vista cenital <span>◇</span>
+                </button>
                 <button
                   type="button"
                   id="scene-live-toggle"

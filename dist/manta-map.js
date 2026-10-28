@@ -92,7 +92,7 @@ export class MantaMap {
       this.drawBase();
       this.scheduleDraw();
     };
-    this.satellite.src = "./assets/manta-satellite.webp";
+    this.satellite.src = "./assets/manta-satellite.webp?v=detail-3";
     this.motionPreference.addEventListener("change", this.updateLive);
     document.addEventListener("visibilitychange", this.updateLive);
     if ("IntersectionObserver" in window) {

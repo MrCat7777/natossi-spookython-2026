@@ -31,7 +31,9 @@ La suite incluye 17 pruebas de reproducibilidad, conservación de la población,
 5. **Probar un brote sorpresa.** Duplica el contagio, reduce a la mitad las dosis, mueve el inicio al transporte o establece una eficacia del 50 %. Los atajos modifican parámetros del mismo modelo.
 6. **Compartir el resultado.** Exporta el experimento como JSON o imprime un resumen con la configuración y la comparación.
 
-El vídeo tiene dos archivos de entrega: Full HD 1920 × 1080 a 60 fps para escritorio y HD 1280 × 720 a 60 fps para móvil. Ambas versiones se interpolan desde la secuencia cartográfica renderizada a 24 fps; los fotogramas de entrega no añaden detalle satelital a la imagen de origen.
+El vídeo tiene dos archivos de entrega: Full HD 1920 × 1080 a 60 fps para escritorio y HD 1280 × 720 a 60 fps para móvil. Ambas versiones parten de un render nativo de 1920 × 1080 a 24 fps sobre una imagen satelital de 4096 × 3352. La cadencia de entrega de 60 fps se interpola; las vistas no representan una captura en vivo.
+
+La identidad utiliza Outfit para títulos y Space Grotesk para textos. La escena arranca en perspectiva y permite volver a la vista cenital. Las tres etapas de la interfaz —configurar, simular y descubrir— reflejan el estado real de la operación.
 
 El recorrido temporal usa `requestAnimationFrame`, con 1,8 segundos por día a velocidad 1× y opciones 0,5× y 2×. Los estados SEIR cambian sólo al entrar en un día entero. El reloj intradiario, los destellos, las señales entre contactos y la marcha de los personajes son visuales; no alteran la simulación. Los contadores describen la primera réplica y conservan la población total de 240 agentes.
 

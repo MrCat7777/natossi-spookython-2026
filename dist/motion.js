@@ -194,6 +194,12 @@ export function initMotion() {
       const bounds = card.getBoundingClientRect();
       card.style.setProperty("--mouse-x", `${x - bounds.left}px`);
       card.style.setProperty("--mouse-y", `${y - bounds.top}px`);
+      const px = (x - bounds.left) / Math.max(1, bounds.width) - 0.5;
+      const py = (y - bounds.top) / Math.max(1, bounds.height) - 0.5;
+      card.style.setProperty("--tilt-x", `${-py * 5}deg`);
+      card.style.setProperty("--tilt-y", `${px * 6}deg`);
+      card.style.setProperty("--look-x", `${px * -14}px`);
+      card.style.setProperty("--look-y", `${py * -10}px`);
       pointerUpdate = null;
     }
   }
@@ -339,10 +345,34 @@ export function initMotion() {
         if (pointerUpdate?.card === card) pointerUpdate = null;
         card.style.removeProperty("--mouse-x");
         card.style.removeProperty("--mouse-y");
+        ["--tilt-x", "--tilt-y", "--look-x", "--look-y"].forEach((property) =>
+          card.style.removeProperty(property),
+        );
       },
       { passive: true, signal },
     );
   });
+
+  if (sticky) {
+    sticky.addEventListener(
+      "pointermove",
+      (event) => {
+        if (reducedMotion || !pointerPreference.matches) return;
+        pointerUpdate = { card: sticky, x: event.clientX, y: event.clientY };
+        schedule();
+      },
+      { passive: true, signal },
+    );
+    sticky.addEventListener(
+      "pointerleave",
+      () => {
+        ["--look-x", "--look-y"].forEach((property) =>
+          sticky.style.removeProperty(property),
+        );
+      },
+      { passive: true, signal },
+    );
+  }
 
   applyMotionPreference();
   const cleanup = () => {
