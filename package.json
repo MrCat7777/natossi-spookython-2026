@@ -1,0 +1,11 @@
+{
+  "name": "umbra-spookython",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Una experiencia de Halloween para explorar estrategias de contención.",
+  "scripts": {
+    "dev": "python3 -m http.server 4173 --directory dist",
+    "test": "node --test tests/*.test.mjs"
+  }
+}
