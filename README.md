@@ -35,15 +35,15 @@ Los estados son susceptible, expuesto, infeccioso y recuperado o inmune. Cada co
 
 Configuración inicial del motor:
 
-| Parámetro | Valor |
-| --- | --- |
-| Población sintética | 240 personas |
-| Horizonte | 30 días |
-| Probabilidad de transmisión por contacto | 0,28 |
-| Dosis disponibles | 40 |
-| Semilla | 2026 |
-| Repeticiones | 12 |
-| Punto inicial | Mercado |
+| Parámetro                                | Valor        |
+| ---------------------------------------- | ------------ |
+| Población sintética                      | 240 personas |
+| Horizonte                                | 30 días      |
+| Probabilidad de transmisión por contacto | 0,28         |
+| Dosis disponibles                        | 40           |
+| Semilla                                  | 2026         |
+| Repeticiones                             | 12           |
+| Punto inicial                            | Mercado      |
 
 Las tres estrategias comparten red, estados iniciales y sorteos de contagio para cada repetición. La misma configuración y semilla producen el mismo resultado. El motor devuelve medias y el rango mínimo–máximo observado de infecciones acumuladas; ese rango no es un intervalo de confianza. La comparación informa diferencias del modelo; una estrategia puede rendir de manera distinta al cambiar las condiciones.
 
@@ -55,6 +55,8 @@ Las dosis representan inmunidad inmediata en este escenario simplificado. No se 
 umbra/
 ├── dist/                     # Carpeta completa que debe servir el hosting
 │   ├── index.html
+│   ├── styles.css
+│   ├── app.js                # Controles, navegación y gráficos
 │   ├── assets/               # Recursos visuales
 │   └── simulation.js         # Motor reproducible
 ├── tests/
@@ -85,3 +87,15 @@ Costo mensual ≈ almacenamiento S3
 ```
 
 Registra las cantidades y tarifas empleadas, las condiciones del plan de tu cuenta y el gasto real que aparezca en AWS Billing. Configura una alerta de presupuesto antes de publicar recursos.
+
+## Desarrollo
+
+El repositorio principal es [MrCat7777/umbra-spookython-2026](https://github.com/MrCat7777/umbra-spookython-2026). Para trabajar en un cambio:
+
+```bash
+git pull --ff-only
+git switch -c feature/nombre-del-cambio
+npm run dev
+```
+
+Antes de subirlo, ejecuta `npm test`, revisa la interfaz en escritorio y móvil y crea un commit que describa el cambio. Publica la rama con `git push -u origin HEAD` y abre un pull request hacia `main`.
