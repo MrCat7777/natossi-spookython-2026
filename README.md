@@ -20,7 +20,7 @@ Para comprobar el motor:
 npm test
 ```
 
-La suite incluye 12 pruebas de reproducibilidad, conservación de la población, asignación de dosis, eficacia parcial, respuesta diferida y coherencia de los estados utilizados por el mapa.
+La suite incluye 17 pruebas de reproducibilidad, conservación de la población, asignación de dosis, eficacia parcial, respuesta diferida y coherencia de los estados utilizados por el mapa.
 
 ## Recorrido de la demo
 
@@ -31,13 +31,17 @@ La suite incluye 12 pruebas de reproducibilidad, conservación de la población,
 5. **Probar un brote sorpresa.** Duplica el contagio, reduce a la mitad las dosis, mueve el inicio al transporte o establece una eficacia del 50 %. Los atajos modifican parámetros del mismo modelo.
 6. **Compartir el resultado.** Exporta el experimento como JSON o imprime un resumen con la configuración y la comparación.
 
+El vídeo tiene dos archivos de entrega: Full HD 1920 × 1080 a 60 fps para escritorio y HD 1280 × 720 a 60 fps para móvil. Ambas versiones se interpolan desde la secuencia cartográfica renderizada a 24 fps; los fotogramas de entrega no añaden detalle satelital a la imagen de origen.
+
+El recorrido temporal usa `requestAnimationFrame`, con 1,8 segundos por día a velocidad 1× y opciones 0,5× y 2×. Los estados SEIR cambian sólo al entrar en un día entero. El reloj intradiario, los destellos, las señales entre contactos y la marcha de los personajes son visuales; no alteran la simulación. Los contadores describen la primera réplica y conservan la población total de 240 agentes.
+
 La interfaz respeta `prefers-reduced-motion`: evita el scrubbing y la reproducción automática del vídeo cuando se solicita movimiento reducido. Los controles siguen disponibles y el contenido puede recorrerse sin depender de las transiciones.
 
 ## Geografía real, población sintética
 
 `dist/assets/manta-map.json` conserva geometría y referencias cartográficas de Manta obtenidas de OpenStreetMap. Las fuentes, la atribución y el tratamiento de los datos se describen en [docs/mapa-manta.md](docs/mapa-manta.md).
 
-Los personajes sombreados tienen un ciclo de marcha y un aspecto distinto por estado. La animación se limita a 30 fps, se pausa fuera de pantalla y al ocultar la pestaña, y respeta movimiento reducido. El movimiento es visual: no modifica los contactos ni el resultado epidemiológico.
+Los personajes sombreados tienen un ciclo de marcha y un aspecto distinto por estado. La animación se limita a 60 fps, se pausa fuera de pantalla y al ocultar la pestaña, y respeta movimiento reducido. El movimiento es visual: no modifica los contactos ni el resultado epidemiológico.
 
 Las personas, sus contactos y sus ubicaciones superpuestas son **sintéticos**. No representan domicilios, desplazamientos, pacientes ni registros sanitarios reales. La cartografía da contexto geográfico a la demo; no calibra el modelo epidemiológico.
 

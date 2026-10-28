@@ -131,6 +131,10 @@ export function initMotion() {
       const active = index === chapter;
       frame.style.opacity = opacity.toFixed(3);
       frame.style.transform = `translateY(calc(-52% + ${offset.toFixed(2)}px))`;
+      frame.style.filter = reducedMotion
+        ? "none"
+        : `blur(${((1 - opacity) * 5).toFixed(2)}px)`;
+      frame.style.setProperty("--chapter-depth", `${(1 - opacity) * 35}px`);
       frame.style.pointerEvents = active && opacity > 0.2 ? "auto" : "none";
       frame.classList.toggle("is-active", active);
       frame.setAttribute("aria-hidden", String(!active));
@@ -173,6 +177,9 @@ export function initMotion() {
           : Math.min(4, Math.floor(progress * 5));
         showChapter(chapter, progress);
         if (chapterProgress) chapterProgress.style.width = `${progress * 100}%`;
+        if (video && !reducedMotion) {
+          video.style.transform = `scale(${1.035 + progress * 0.035}) translate3d(0,${(progress - 0.5) * -12}px,0)`;
+        }
         if (video && !reducedMotion && Number.isFinite(video.duration)) {
           desiredVideoTime = progress * Math.max(0, video.duration - 1 / 24);
           seekVideo();

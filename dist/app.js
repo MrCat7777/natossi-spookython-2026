@@ -1,6 +1,7 @@
 import { runComparison } from "./simulation.js";
-import { MantaMap } from "./manta-map.js";
-import { initMotion } from "./motion.js";
+import { MantaMap } from "./manta-map.js?v=motion-2";
+import { initMotion } from "./motion.js?v=motion-2";
+import { SimulationClock } from "./playback.js";
 
 const $ = (selector) => document.querySelector(selector);
 const form = $("#simulation-form");
@@ -26,7 +27,9 @@ let territoryMap = null;
 let outbreakMap = null;
 let selectedPlace = "mercado";
 let day = 0;
-let playbackTimer = null;
+let lastRenderedDay = -1;
+let lastRenderedStrategy = "";
+let playbackRunning = false;
 let didAutoPlay = false;
 let mapInView = false;
 let currentView = "map";
@@ -226,44 +229,139 @@ function renderComparison(result) {
     report.append(group);
   }
 }
-function setDay(value) {
-  day = Math.max(0, Math.min(30, Number(value)));
+const clock = new SimulationClock({
+  onFrame: renderPlaybackFrame,
+  onFinish: () => {
+    stopPlayback();
+    $("#playback-event").textContent =
+      "Recorrido completo. Compara otro futuro.";
+  },
+});
+function animateReadout(element, value) {
+  const text = String(value);
+  if (element.textContent === text) return;
+  element.textContent = text;
+  if (!reducedMotion.matches) {
+    element.getAnimations?.().forEach((animation) => animation.cancel());
+    element.animate(
+      [
+        { opacity: 0.25, transform: "translateY(9px)", filter: "blur(3px)" },
+        { opacity: 1, transform: "translateY(0)", filter: "blur(0px)" },
+      ],
+      { duration: 480, easing: "cubic-bezier(.22,1,.36,1)" },
+    );
+  }
+}
+const numberAnimations = new WeakMap();
+function animateMetric(element, target, suffix = "") {
+  const previousFrame = numberAnimations.get(element);
+  if (previousFrame) cancelAnimationFrame(previousFrame);
+  const previous = Number(element.dataset.numericValue ?? 0);
+  element.dataset.numericValue = String(target);
+  if (reducedMotion.matches) {
+    element.textContent = `${number.format(target)}${suffix}`;
+    return;
+  }
+  let started = null;
+  function frame(timestamp) {
+    started ??= timestamp;
+    const progress = Math.min(1, (timestamp - started) / 950);
+    const eased = 1 - Math.pow(1 - progress, 4);
+    element.textContent = `${number.format(previous + (target - previous) * eased)}${suffix}`;
+    if (progress < 1)
+      numberAnimations.set(element, requestAnimationFrame(frame));
+    else numberAnimations.delete(element);
+  }
+  numberAnimations.set(element, requestAnimationFrame(frame));
+}
+function renderPlaybackFrame({ position, day: integerDay, fraction }) {
+  day = integerDay;
   const slider = $("#day-slider");
-  slider.value = day;
-  slider.style.setProperty("--value", `${(day / 30) * 100}%`);
-  $("#map-day").textContent = String(day).padStart(2, "0");
-  $("#day-output").textContent = `Día ${day}`;
+  slider.value = String(position);
+  slider.style.setProperty("--value", `${(position / 30) * 100}%`);
+  $(".simulation-map").style.setProperty(
+    "--day-progress",
+    `${fraction * 100}%`,
+  );
+  $("#day-progress-fill").style.width = `${(position / 30) * 100}%`;
+  $("#model-clock").textContent =
+    `${String(Math.floor(fraction * 24)).padStart(2, "0")}:${String(Math.floor(fraction * 24 * 60) % 60).padStart(2, "0")}`;
   const strategy = $("#map-strategy").value;
-  outbreakMap?.setDay(day, strategy);
-  const states = latestResult?.timeline?.[strategy]?.[day];
-  $("#map-infected-count").textContent = states
-    ? states.filter((state) => state === 2).length
-    : "—";
+  outbreakMap?.setFrame(integerDay, fraction, strategy);
+  if (integerDay === lastRenderedDay && strategy === lastRenderedStrategy)
+    return;
+  lastRenderedDay = integerDay;
+  lastRenderedStrategy = strategy;
+  animateReadout($("#map-day"), String(integerDay).padStart(2, "0"));
+  $("#day-output").textContent = `Día ${integerDay}`;
+  const states = latestResult?.timeline?.[strategy]?.[integerDay];
+  if (!states) return;
+  const counts = [0, 0, 0, 0];
+  states.forEach((state) => counts[state]++);
+  animateReadout($("#map-infected-count"), counts[2]);
+  ["susceptible", "exposed", "infected", "immune"].forEach((state, index) =>
+    animateReadout($(`#live-${state}`), counts[index]),
+  );
+  const before = latestResult.timeline[strategy][Math.max(0, integerDay - 1)];
+  const newlyExposed = states.filter(
+    (state, index) => state === 1 && before[index] === 0,
+  ).length;
+  const recovered = states.filter(
+    (state, index) => state === 3 && before[index] !== 3,
+  ).length;
+  const message =
+    integerDay === 0
+      ? "Paciente cero detectado. La ciudad sigue en movimiento."
+      : newlyExposed > 0
+        ? `${newlyExposed} nuevas exposiciones · ${counts[2]} zombies activos`
+        : recovered > 0
+          ? `${recovered} agentes pasan a inmunes · ${counts[2]} zombies activos`
+          : counts[2] === 0
+            ? "Sin agentes infecciosos activos en este día."
+            : `Observando ${counts[2]} agentes infecciosos activos.`;
+  $("#playback-event").textContent = message;
+  if (!reducedMotion.matches && playbackRunning)
+    $(".day-transition-flash").animate([{ opacity: 0.45 }, { opacity: 0 }], {
+      duration: 750,
+      easing: "ease-out",
+    });
+}
+function setDay(value) {
+  clock.seek(Number(value));
 }
 function stopPlayback() {
-  clearInterval(playbackTimer);
-  playbackTimer = null;
+  clock.pause();
+  playbackRunning = false;
   $("#play-button").setAttribute("aria-label", "Reproducir evolución");
   $("#play-button use").setAttribute("href", "#i-play");
+  $(".map-view").classList.remove("is-playing");
 }
 function startPlayback() {
-  if (!latestResult || playbackTimer || currentView !== "map") return;
-  if (day >= 30) setDay(0);
+  if (!latestResult || clock.playing || currentView !== "map") return;
+  playbackRunning = true;
   $("#play-button").setAttribute("aria-label", "Pausar evolución");
   $("#play-button use").setAttribute("href", "#i-pause");
-  playbackTimer = setInterval(() => {
-    setDay(day + 1);
-    if (day >= 30) stopPlayback();
-  }, 550);
+  $(".map-view").classList.add("is-playing");
+  clock.play();
 }
 $("#play-button").addEventListener("click", () =>
-  playbackTimer ? stopPlayback() : startPlayback(),
+  clock.playing ? stopPlayback() : startPlayback(),
 );
 $("#day-slider").addEventListener("input", (event) => {
   stopPlayback();
   setDay(event.target.value);
 });
-$("#map-strategy").addEventListener("change", () => setDay(day));
+$("#map-strategy").addEventListener("change", () => {
+  lastRenderedStrategy = "";
+  renderPlaybackFrame({
+    position: clock.position,
+    day: Math.floor(clock.position),
+    fraction: clock.position % 1,
+  });
+});
+$("#playback-speed").addEventListener("change", (event) =>
+  clock.setSpeed(event.target.value),
+);
 if ("IntersectionObserver" in window)
   new IntersectionObserver(
     (entries) => {
@@ -321,11 +419,13 @@ async function executeSimulation({ animatePlayback = false } = {}) {
     latestResult = result;
     drawChart(result);
     renderComparison(result);
-    $("#saved-value").textContent = number.format(result.saved);
-    $("#reduction-value").textContent = `${number.format(result.reduction)}%`;
+    animateMetric($("#saved-value"), result.saved);
+    animateMetric($("#reduction-value"), result.reduction, "%");
     $("#range-value").textContent =
       `${result.strategic.range[0]}–${result.strategic.range[1]}`;
     outbreakMap?.setSimulation(result);
+    lastRenderedDay = -1;
+    lastRenderedStrategy = "";
     setDay(0);
     $("#pending-state").textContent = "";
     setStatus("Simulación completa");
@@ -413,7 +513,7 @@ function showView(view) {
   if (view === "chart") {
     stopPlayback();
     resizeChartLabels();
-    if (!reducedMotion.matches)
+    if (!reducedMotion.matches) {
       $("#simulation-chart").animate(
         [
           { opacity: 0, transform: "translateY(7px)" },
@@ -421,8 +521,43 @@ function showView(view) {
         ],
         { duration: 600, easing: "cubic-bezier(.22,1,.36,1)" },
       );
+      document.querySelectorAll(".chart-path").forEach((path, index) => {
+        const length = path.getTotalLength?.();
+        if (length)
+          path.animate(
+            [
+              {
+                strokeDasharray: `${length} ${length}`,
+                strokeDashoffset: length,
+              },
+              { strokeDasharray: `${length} ${length}`, strokeDashoffset: 0 },
+            ],
+            {
+              duration: 1250,
+              delay: index * 90,
+              easing: "cubic-bezier(.16,1,.3,1)",
+            },
+          );
+      });
+    }
   } else {
     outbreakMap?.setDay(day, $("#map-strategy").value);
+    if (!reducedMotion.matches)
+      $(".simulation-map").animate(
+        [
+          {
+            opacity: 0.2,
+            transform: "translateY(12px) scale(.98)",
+            filter: "blur(4px)",
+          },
+          {
+            opacity: 1,
+            transform: "translateY(0) scale(1)",
+            filter: "blur(0px)",
+          },
+        ],
+        { duration: 650, easing: "cubic-bezier(.16,1,.3,1)" },
+      );
   }
 }
 document.querySelectorAll("[data-view]").forEach((button) => {
@@ -571,6 +706,14 @@ syncSceneLive();
 $("#scene-zoom-toggle").addEventListener("click", () => {
   sceneZoom = sceneZoom === 3 ? 1 : sceneZoom + 1;
   outbreakMap?.setZoom(sceneZoom);
+  if (!reducedMotion.matches)
+    $("#outbreak-map").animate(
+      [
+        { opacity: 0.4, transform: "scale(1.035)", filter: "blur(3px)" },
+        { opacity: 1, transform: "scale(1)", filter: "blur(0px)" },
+      ],
+      { duration: 700, easing: "cubic-bezier(.16,1,.3,1)" },
+    );
   const button = $("#scene-zoom-toggle");
   button.innerHTML = `${sceneZoom === 3 ? "Ver toda la ciudad" : "Acercar al foco"} <span>${sceneZoom === 1 ? "1" : sceneZoom === 2 ? "1,8" : "2,8"}×</span>`;
   button.setAttribute(

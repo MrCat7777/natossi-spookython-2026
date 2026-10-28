@@ -11,8 +11,8 @@
     <title>Natossi — La ciudad no se rinde.</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="preload" href="./assets/manta-poster.webp" as="image" />
-    <link rel="stylesheet" href="./styles.css" />
-    <script type="module" src="./app.js"></script>
+    <link rel="stylesheet" href="./styles.css?v=motion-2" />
+    <script type="module" src="./app.js?v=motion-2"></script>
   </head>
   <body>
     <a class="skip-link" href="#simulador">Saltar al simulador</a>
@@ -129,7 +129,12 @@
             poster="./assets/manta-poster.webp"
             aria-hidden="true"
           >
-            <source src="./assets/manta-intro.mp4" type="video/mp4" />
+            <source
+              src="./assets/manta-intro-hd.mp4"
+              type="video/mp4"
+              media="(min-width: 1000px)"
+            />
+            <source src="./assets/manta-intro.mp4?v=hd60" type="video/mp4" />
           </video>
           <div class="intro-shade"></div>
           <div class="intro-noise" aria-hidden="true"></div>
@@ -776,6 +781,8 @@
               aria-labelledby="tab-map"
             >
               <div class="simulation-map">
+                <div class="day-transition-flash" aria-hidden="true"></div>
+                <div class="tactical-scan" aria-hidden="true"></div>
                 <canvas
                   id="outbreak-map"
                   role="img"
@@ -789,7 +796,11 @@
                 </div>
                 <div class="map-day-stamp">
                   <span>DÍA</span><strong id="map-day">00</strong
-                  ><small>/ 30</small>
+                  ><small
+                    >/ 30<span class="model-clock" id="model-clock"
+                      >00:00</span
+                    ></small
+                  >
                 </div>
                 <div class="map-population-stamp">
                   <span id="map-infected-count">—</span
@@ -823,6 +834,27 @@
                   Acercar al foco <span>1×</span>
                 </button>
               </div>
+              <div
+                class="live-population"
+                aria-label="Estados de la primera réplica en el día mostrado"
+              >
+                <div>
+                  <i class="legend-dot state-s"></i><span>Sanos</span
+                  ><strong id="live-susceptible">—</strong>
+                </div>
+                <div>
+                  <i class="legend-dot state-e"></i><span>Expuestos</span
+                  ><strong id="live-exposed">—</strong>
+                </div>
+                <div>
+                  <i class="legend-dot state-i"></i><span>Zombies</span
+                  ><strong id="live-infected">—</strong>
+                </div>
+                <div>
+                  <i class="legend-dot state-r"></i><span>Inmunes</span
+                  ><strong id="live-immune">—</strong>
+                </div>
+              </div>
               <div class="playback-controls">
                 <button
                   id="play-button"
@@ -838,8 +870,15 @@
                   id="day-slider"
                   min="0"
                   max="30"
+                  step="0.01"
                   value="0"
                 /><output id="day-output" for="day-slider">Día 0</output
+                ><label for="playback-speed" class="sr-only"
+                  >Velocidad de reproducción</label
+                ><select id="playback-speed" title="Velocidad de reproducción">
+                  <option value="0.5">0,5×</option>
+                  <option value="1" selected>1×</option>
+                  <option value="2">2×</option></select
                 ><label for="map-strategy" class="sr-only"
                   >Estrategia mostrada en el mapa</label
                 ><select id="map-strategy">
@@ -848,9 +887,18 @@
                   <option value="baseline">Sin intervención</option>
                 </select>
               </div>
+              <div class="playback-narrative">
+                <span class="live-dot"></span>
+                <p id="playback-event">Preparando el recorrido de la ciudad…</p>
+                <span class="playback-time-label">TIEMPO DEL MODELO</span>
+              </div>
+              <div class="day-progress-track" aria-hidden="true">
+                <span id="day-progress-fill"></span>
+              </div>
               <p class="map-replica-note">
                 Mapa: primera réplica. Las curvas y las métricas muestran
-                promedios.
+                promedios. Los estados cambian por día; el reloj y las
+                transiciones son una interpolación visual.
               </p>
             </div>
             <div

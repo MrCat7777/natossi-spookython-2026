@@ -61,6 +61,7 @@ export class MantaMap {
     this.isOutbreak = canvas.id === "outbreak-map";
     this.result = null;
     this.day = 0;
+    this.dayFraction = 0;
     this.strategy = "strategic";
     this.destroyed = false;
     this.pendingFrame = null;
@@ -185,7 +186,7 @@ export class MantaMap {
       this.motionPreference.matches
     )
       return;
-    if (timestamp - this.lastLivePaint >= 1000 / 30) {
+    if (timestamp - this.lastLivePaint >= 1000 / 60 - 1) {
       this.lastLivePaint = timestamp;
       this.animationTime = timestamp / 1000;
       this.draw();
@@ -202,6 +203,28 @@ export class MantaMap {
       ? strategy
       : "strategic";
     this.scheduleDraw();
+  }
+
+  setFrame(day, fraction = 0, strategy = "strategic") {
+    const nextDay = Math.max(
+      0,
+      Math.min(this.result?.days ?? 30, Math.floor(Number(day) || 0)),
+    );
+    const nextFraction = Math.max(0, Math.min(1, Number(fraction) || 0));
+    const changed =
+      nextDay !== this.day ||
+      nextFraction !== this.dayFraction ||
+      strategy !== this.strategy;
+    this.day = nextDay;
+    this.dayFraction = nextFraction;
+    this.strategy = ["strategic", "random", "baseline"].includes(strategy)
+      ? strategy
+      : "strategic";
+    if (
+      changed &&
+      (!this.liveEnabled || !this.visible || this.motionPreference.matches)
+    )
+      this.scheduleDraw();
   }
 
   resize() {
@@ -449,7 +472,7 @@ export class MantaMap {
     ctx.scale(2, 2);
     ctx.translate(16, 32);
     const zombie = state === 2;
-    const phase = (frame / 8) * Math.PI * 2;
+    const phase = (frame / 16) * Math.PI * 2;
     const stride = Math.sin(phase) * (zombie ? 2 : 2.5);
     const bodyTilt = zombie ? 1.4 : 0;
     const clothes = zombie
@@ -626,6 +649,33 @@ export class MantaMap {
     });
     ctx.strokeStyle = "rgba(255,146,84,.15)";
     ctx.stroke();
+    // Contact signals follow model links, without claiming observed transmission routes.
+    if (!this.motionPreference.matches) {
+      let drawn = 0;
+      for (let index = 0; index < edges.length && drawn < 45; index++) {
+        const [a, b] = edges[index];
+        if (index % 4 || (states[a] !== 2 && states[b] !== 2)) continue;
+        const source = states[a] === 2 ? a : b;
+        const target = source === a ? b : a;
+        if (states[target] > 1) continue;
+        const [ax, ay] = projected[source],
+          [bx, by] = projected[target];
+        const phase = (time * 0.38 + index * 0.137) % 1;
+        const px = ax + (bx - ax) * phase,
+          py = ay + (by - ay) * phase;
+        ctx.strokeStyle = `rgba(255,169,99,${0.1 + Math.sin(phase * Math.PI) * 0.17})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(px, py);
+        ctx.stroke();
+        ctx.fillStyle = "rgba(255,207,143,.9)";
+        ctx.beginPath();
+        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        drawn++;
+      }
+    }
     // Depth sort preserves the silhouettes in small crowds; no live state is
     // invented by the renderer. Every figure is one synthetic model agent.
     const order = projected
@@ -639,9 +689,32 @@ export class MantaMap {
         continue;
       const state = states[index];
       const style = index % 4;
+      const previous = timeline[Math.max(0, this.day - 1)]?.[index];
+      if (
+        previous !== state &&
+        this.day > 0 &&
+        !this.motionPreference.matches
+      ) {
+        const transition = 1 - Math.min(1, this.dayFraction / 0.6);
+        if (transition > 0) {
+          ctx.strokeStyle = `rgba(${state === 2 ? "255,154,85" : state === 3 ? "135,225,188" : "255,210,136"},${transition * 0.8})`;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.ellipse(
+            x,
+            y - 5,
+            9 + (1 - transition) * 18,
+            5 + (1 - transition) * 10,
+            0,
+            0,
+            Math.PI * 2,
+          );
+          ctx.stroke();
+        }
+      }
       const phase = randomAt(this.result.seed, index, 40);
       const frame = motionAllowed
-        ? Math.floor((time * (state === 2 ? 3.2 : 5.2) + phase * 8) % 8)
+        ? Math.floor((time * (state === 2 ? 6.4 : 10.4) + phase * 16) % 16)
         : 0;
       if (state === 2 || state === 1) {
         const pulse = 0.7 + Math.sin(time * 2 + phase * 8) * 0.17;

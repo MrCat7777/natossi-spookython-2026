@@ -55,4 +55,10 @@ Esta arquitectura es una propuesta. El despliegue AWS sigue pendiente y debe acr
 
 El workflow de GitHub Pages publica el contenido estático de `dist/` después de comprobar el motor y la sintaxis de los módulos. Es una publicación de presentación independiente del despliegue AWS solicitado en las bases.
 
-Las figuras sombreadas del mapa usan un atlas de sprites generado por canvas. Un bucle limitado a 30 fps se ejecuta sólo si el mapa está visible, la pestaña está activa y se permite el movimiento. El usuario puede pausarlo o acercarse al foco sin cambiar los estados del modelo.
+Las figuras sombreadas del mapa usan un atlas de sprites generado por canvas. Un bucle limitado a 60 fps se ejecuta sólo si el mapa está visible, la pestaña está activa y se permite el movimiento. El usuario puede pausarlo o acercarse al foco sin cambiar los estados del modelo.
+
+## Reloj y entrega audiovisual
+
+`playback.js` mantiene un reloj de presentación continuo con `requestAnimationFrame`. El día entero selecciona el estado de la réplica; la fracción controla el progreso visual. Pausar o salir de pantalla conserva la posición, y un fotograma retrasado no hace saltar varios días.
+
+La entrega audiovisual sirve 1080p60 en escritorio y 720p60 en móvil. La cadencia de 60 fps usa interpolación de la secuencia original de 24 fps y escalado Lanczos; no equivale a una nueva captura de satélite. Los MP4 conservan keyframes frecuentes y metadatos al inicio para buscar posiciones al hacer scroll.
