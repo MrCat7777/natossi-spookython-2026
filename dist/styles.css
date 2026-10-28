@@ -2587,7 +2587,7 @@ input[type="range"]:hover::-webkit-slider-thumb {
   font-size: 10px;
 }
 .chart-tick {
-  font-size: 11px;
+  font-size: var(--chart-tick-size, 11px);
 }
 .metric-label {
   font-size: 11px;
@@ -2717,7 +2717,7 @@ input[type="range"]::-moz-range-thumb {
     margin-top: 0;
   }
   .chart-tick {
-    font-size: 26px;
+    font-size: var(--chart-tick-size, 26px);
   }
   .chart-legend {
     font-size: 11px;

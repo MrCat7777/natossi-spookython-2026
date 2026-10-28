@@ -309,5 +309,19 @@ function drawContactNetwork() {
 }
 
 drawContactNetwork();
+// Keep SVG axis labels legible at every chart width, including split tablet layouts.
+const chart = $("#simulation-chart");
+const resizeChartLabels = () => {
+  const width = chart.getBoundingClientRect().width;
+  if (width > 0) {
+    chart.style.setProperty("--chart-tick-size", `${(11 * 740) / width}px`);
+  }
+};
+if ("ResizeObserver" in window) {
+  new ResizeObserver(resizeChartLabels).observe(chart);
+} else {
+  window.addEventListener("resize", resizeChartLabels, { passive: true });
+  resizeChartLabels();
+}
 syncRanges(false);
 executeSimulation();
