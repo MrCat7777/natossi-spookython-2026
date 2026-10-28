@@ -6068,3 +6068,10 @@ h2 em {
     font-size: 20px;
   }
 }
+@media (max-width: 370px) {
+  .intro-frame h1,
+  .intro-frame h1 em {
+    font-size: 55px;
+    letter-spacing: -3px;
+  }
+}
