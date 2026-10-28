@@ -4728,3 +4728,152 @@ input[type="range"]::-moz-range-thumb {
     display: none !important;
   }
 }
+/* Keep map-source credits readable at presentation and mobile sizes. */
+.video-credit {
+  font-size: 8px;
+  letter-spacing: 0.3px;
+  line-height: 1.6;
+  right: 30px;
+  bottom: 12px;
+  max-width: 75%;
+  text-align: right;
+  color: #8e9baa;
+}
+.satellite-source {
+  font-size: 8px;
+  line-height: 1.5;
+  max-width: 85%;
+  bottom: 9px;
+}
+.territory-map-wrap .map-attribution {
+  bottom: 34px;
+  font-size: 8px;
+}
+.satellite-attribution {
+  font-size: 7px;
+  line-height: 1.5;
+  max-width: 92%;
+  bottom: 7px;
+  color: #b5c1ce;
+}
+.scene-live-badge {
+  bottom: 42px;
+}
+.map-day-stamp {
+  bottom: 69px;
+}
+.map-population-stamp {
+  bottom: 75px;
+}
+.map-state-legend > span {
+  font-size: 9px;
+}
+@media (max-width: 980px) {
+  .video-credit {
+    font-size: 7px;
+    max-width: 90%;
+  }
+  .satellite-attribution {
+    font-size: 7px;
+  }
+  .scene-live-badge {
+    bottom: 43px;
+  }
+  .map-day-stamp {
+    bottom: 72px;
+  }
+  .map-population-stamp {
+    bottom: 78px;
+  }
+  .map-state-legend {
+    max-width: calc(100% - 22px);
+  }
+}
+@media (max-width: 700px) {
+  .video-credit {
+    left: 22px;
+    right: 22px;
+    bottom: 9px;
+    max-width: none;
+    font-size: 7px;
+    text-align: left;
+    line-height: 1.5;
+  }
+  .intro-bottom {
+    bottom: 67px;
+  }
+  .satellite-source {
+    font-size: 7px;
+    max-width: 92%;
+    bottom: 9px;
+    line-height: 1.4;
+  }
+  .territory-map-wrap .map-attribution {
+    font-size: 7px;
+    bottom: 40px;
+  }
+  .map-place-info {
+    bottom: 65px;
+  }
+  .satellite-attribution {
+    font-size: 6.5px;
+    line-height: 1.5;
+    max-width: 94%;
+    bottom: 6px;
+  }
+  .scene-live-badge {
+    bottom: 44px;
+  }
+  .map-day-stamp {
+    bottom: 72px;
+  }
+  .map-population-stamp {
+    bottom: 77px;
+  }
+  .map-state-legend {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px 13px;
+    max-width: calc(100% - 22px);
+  }
+  .map-state-legend > span {
+    font-size: 8px;
+  }
+  .scene-live-toggle {
+    top: 71px;
+  }
+  .scene-zoom-toggle {
+    top: 108px;
+  }
+  .intro-telemetry {
+    bottom: 157px;
+  }
+}
+@media (max-width: 370px) {
+  .video-credit {
+    left: 18px;
+    right: 18px;
+    font-size: 6.5px;
+  }
+  .intro-bottom {
+    bottom: 71px;
+  }
+  .map-state-legend > span {
+    font-size: 8px;
+  }
+  .satellite-attribution {
+    font-size: 6px;
+  }
+  .satellite-source {
+    font-size: 6.5px;
+  }
+  .map-place-info {
+    bottom: 70px;
+  }
+}
+@media print {
+  .satellite-attribution,
+  .video-credit {
+    display: none !important;
+  }
+}
